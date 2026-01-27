@@ -20,7 +20,7 @@ Documentación técnica del esquema de base de datos para la gestión de Giber B
     3. **Cierre:** Se paga el total acumulado y se cierra la sesión.
 
 ---
-
+ 
 ## Módulos y Tablas
 
 ### A. Gestión de Sala
