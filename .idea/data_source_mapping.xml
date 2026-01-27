@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="DataSourcePerFileMappings">
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/ed732938-c5d5-47a1-844b-e8ffdb39b04e/console.sql" value="ed732938-c5d5-47a1-844b-e8ffdb39b04e" />
-    <file url="file://$PROJECT_DIR$/db/importar_ludoteca.sql" value="ed732938-c5d5-47a1-844b-e8ffdb39b04e" />
-  </component>
-</project>
