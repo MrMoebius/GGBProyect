@@ -18,3 +18,12 @@ public class ClienteService {
     }
 
 }
+
+
+/*
+*   @Service
+    @RequiredArgsConstructor // <--- Esto genera el constructor automáticamente para campos 'final'
+    public class ClienteService {
+        private final ClienteRepository clienteRepository;
+        // No hace falta escribir el constructor a mano.
+}*/
