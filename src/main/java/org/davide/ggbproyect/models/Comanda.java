@@ -5,11 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
 
-import java.time.Instant;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -26,29 +25,20 @@ public class Comanda {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "id_sesion", nullable = false)
     @ToString.Exclude
     private SesionesMesa idSesion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "id_empleado")
-    @ToString.Exclude
-    private Empleado idEmpleado;
-
-    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "fecha_hora")
-    private Instant fechaHora;
+    private LocalDateTime fechaHora;
 
-    @Size(max = 30)
-    @ColumnDefault("'ENVIADA'")
-    @Column(name = "estado", length = 30)
+    @Size(max = 20)
+    @ColumnDefault("'PENDIENTE'")
+    @Column(name = "estado", length = 20)
     private String estado;
 
-    @Lob
-    @Column(name = "notas")
-    private String notas;
+    @Column(name = "total", precision = 10, scale = 2)
+    private BigDecimal total;
 
     @Override
     public final boolean equals(Object o) {
