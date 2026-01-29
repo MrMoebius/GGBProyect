@@ -2,7 +2,6 @@ package org.davide.ggbproyect.service;
 
 import org.davide.ggbproyect.models.Comanda;
 import org.davide.ggbproyect.models.ComandaDTO;
-import org.davide.ggbproyect.models.Empleado;
 import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.repository.ComandaRepository;
 import org.springframework.stereotype.Service;
@@ -43,16 +42,9 @@ public class ComandaService {
                 sesion.setId(comandaDTO.getIdSesion());
                 existingComanda.setIdSesion(sesion);
             }
-            if (comandaDTO.getIdEmpleado() != null) {
-                Empleado empleado = new Empleado();
-                empleado.setId(comandaDTO.getIdEmpleado());
-                existingComanda.setIdEmpleado(empleado);
-            } else {
-                existingComanda.setIdEmpleado(null);
-            }
             existingComanda.setFechaHora(comandaDTO.getFechaHora());
             existingComanda.setEstado(comandaDTO.getEstado());
-            existingComanda.setNotas(comandaDTO.getNotas());
+            existingComanda.setTotal(comandaDTO.getTotal());
             return new ComandaDTO(comandaRepository.save(existingComanda));
         });
     }

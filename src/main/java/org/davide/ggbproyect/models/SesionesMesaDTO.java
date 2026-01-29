@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -17,25 +17,18 @@ public class SesionesMesaDTO {
     @NotNull
     private Integer idMesa;
 
-    private Integer idReserva;
+    private LocalDateTime inicio;
 
-    private Integer idEmpleadoApertura;
+    private LocalDateTime fin;
 
-    @NotNull
-    private Instant fechaHoraApertura;
-
-    private Instant fechaHoraCierre;
-
-    @Size(max = 30)
+    @Size(max = 20)
     private String estado;
 
     public SesionesMesaDTO(SesionesMesa entity) {
         this.id = entity.getId();
         this.idMesa = entity.getIdMesa() != null ? entity.getIdMesa().getId() : null;
-        this.idReserva = entity.getIdReserva() != null ? entity.getIdReserva().getId() : null;
-        this.idEmpleadoApertura = entity.getIdEmpleadoApertura() != null ? entity.getIdEmpleadoApertura().getId() : null;
-        this.fechaHoraApertura = entity.getFechaHoraApertura();
-        this.fechaHoraCierre = entity.getFechaHoraCierre();
+        this.inicio = entity.getInicio();
+        this.fin = entity.getFin();
         this.estado = entity.getEstado();
     }
 
@@ -49,20 +42,8 @@ public class SesionesMesaDTO {
             entity.setIdMesa(mesa);
         }
         
-        if (this.idReserva != null) {
-            ReservasMesa reserva = new ReservasMesa();
-            reserva.setId(this.idReserva);
-            entity.setIdReserva(reserva);
-        }
-        
-        if (this.idEmpleadoApertura != null) {
-            Empleado empleado = new Empleado();
-            empleado.setId(this.idEmpleadoApertura);
-            entity.setIdEmpleadoApertura(empleado);
-        }
-
-        entity.setFechaHoraApertura(this.fechaHoraApertura);
-        entity.setFechaHoraCierre(this.fechaHoraCierre);
+        entity.setInicio(this.inicio);
+        entity.setFin(this.fin);
         entity.setEstado(this.estado);
         return entity;
     }
