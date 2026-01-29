@@ -45,9 +45,13 @@ public class PagosMesaController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        if (pagosMesaService.delete(id)) {
-            return ResponseEntity.noContent().build();
+        try {
+            if (pagosMesaService.delete(id)) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        return ResponseEntity.notFound().build();
     }
 }
