@@ -1,82 +1,71 @@
-# Giber Bar – Modelo de Datos y Flujos de Negocio
+# Documentación de Base de Datos y Estándares de Desarrollo
 
-Documentación técnica del esquema de base de datos para la gestión de Giber Bar.
+Este documento define las reglas, estándares y convenciones arquitectónicas para el proyecto **GGBProyect**. Su propósito es garantizar la consistencia del código y facilitar el mantenimiento, sirviendo como guía tanto para desarrolladores humanos como para asistentes de IA.
 
-## Conceptos Clave del Negocio
+## 1. Arquitectura del Proyecto
 
-### 1. Identificación de Mesa (QR)
-- **Entidad:** `mesas`
-- **Identificador:** `numero_mesa` (Entero único).
-- **Uso:** Cada mesa física tiene un código QR que codifica este `numero_mesa`.
-- **Flujo:** Al escanear el QR, la aplicación busca en `mesas` por `numero_mesa` para identificar la ubicación física y consultar si hay una `sesion_mesa` activa.
+El proyecto sigue una arquitectura en capas clásica de Spring Boot:
 
-### 2. La Cuenta / Factura (Sesión)
-- **Entidad:** `sesiones_mesa`
-- **Identificador:** `id_sesion` (PK).
-- **Concepto:** Representa la **visita completa** de un grupo de clientes. Actúa como el contenedor de la "Cuenta" o "Factura".
-- **Ciclo de Vida:**
-    1. **Apertura:** El empleado crea la sesión cuando los clientes se sientan.
-    2. **Consumo:** Se agregan `comandas` (comida/bebida) y `ludoteca_sesiones` (juegos) vinculadas a este `id_sesion`.
-    3. **Cierre:** Se paga el total acumulado y se cierra la sesión.
+1.  **Controller (`.controller`)**: Maneja las peticiones HTTP. Solo se comunica con la capa Service. **Siempre** recibe y devuelve DTOs, nunca Entidades.
+2.  **Service (`.service`)**: Contiene la lógica de negocio.
+    *   Debe estar anotado con `@Service`.
+    *   Realiza la conversión entre DTOs y Entidades.
+    *   Inyecta dependencias mediante **constructor** (no usar `@Autowired` en campos).
+3.  **Repository (`.repository`)**: Interfaz que extiende `JpaRepository`. Acceso directo a datos.
+4.  **Model (`.models`)**:
+    *   **Entities**: Clases anotadas con `@Entity` que reflejan las tablas de la BD.
+    *   **DTOs**: Clases POJO (Data Transfer Objects) para transferir datos entre capas.
 
----
+## 2. Convenciones de Naming
 
-## Módulos y Tablas
+*   **Idioma**:
+    *   **Código (Clases, Variables, Métodos)**: Español para el dominio (ej: `Cliente`, `Mesa`), Inglés para componentes técnicos (ej: `Service`, `Repository`, `Controller`, `DTO`).
+    *   **Base de Datos**: Español, usando `snake_case`.
+*   **Clases**: `PascalCase` (ej: `ClienteService`).
+*   **Métodos y Variables**: `camelCase` (ej: `getById`, `fechaAlta`).
+*   **Tablas BD**: Plural, `snake_case` (ej: `clientes`, `sesiones_mesa`).
+*   **Columnas BD**: `snake_case` (ej: `fecha_alta`, `id_cliente`).
 
-### A. Gestión de Sala
-- **mesas**: Configuración física.
-- **sesiones_mesa**: El núcleo de la facturación. Vincula la mesa con el consumo.
+## 3. Reglas de Base de Datos y Entidades
 
-### B. Ludoteca y Tarifas
-El uso de juegos es un servicio opcional que se cobra por sesión.
+### Claves Primarias y Foráneas
+*   **PK**: Prefijo `id_` seguido del nombre de la entidad en singular (ej: `id_cliente`, `id_mesa`). Autoincremental (`IDENTITY`).
+*   **FK**: Mismo nombre que la PK referenciada (ej: `id_rol` en la tabla `empleados`).
 
-- **tarifas_ludoteca**: Configuración de precios (Adulto: 2.50€, Niño: 1.50€).
-- **ludoteca_sesiones**: Registro del uso del servicio.
-    - Vinculado 1:1 con `sesiones_mesa`.
-    - Almacena el desglose de personas (adultos/niños) para estadística.
-    - **`id_comanda_ludoteca`**: Enlace a la comanda donde se generaron los cargos.
+### Tipos de Datos y Restricciones
+*   **Booleanos**: Se mapean a `Boolean` en Java. En BD pueden ser `BIT` o `TINYINT`.
+*   **Fechas**: Usar `Instant` para timestamps (fecha + hora UTC) y `LocalDate` para fechas sin hora.
+*   **Moneda**: Usar `BigDecimal` para precios e importes. Nunca `Double` o `Float`.
+*   **Strings**: Definir siempre `@Size` o `length` en JPA.
 
-### C. Facturación (Carta y Comandas)
-El cobro se unifica mediante el concepto de "Producto".
+### Auditoría y Borrado Lógico
+*   No se eliminan registros físicamente si tienen histórico importante.
+*   Usar campos de estado (ej: `estado` VARCHAR) o flags (ej: `activo` BOOLEAN).
+*   Valores comunes de estado: `'ACTIVO'`, `'BAJA'`, `'PENDIENTE'`, `'LIBRE'`, `'OCUPADA'`.
 
-- **productos**: Catálogo mixto.
-    - *Tangibles:* Hamburguesas, Refrescos (`categoria = 'COMIDA'/'BEBIDA'`).
-    - *Intangibles:* Servicios de ludoteca (`categoria = 'SERVICIO'`).
-        - `USO_LUDOTECA_ADULTO`
-        - `USO_LUDOTECA_NINO_6_13`
-- **comandas**: Agrupador de pedidos. Una sesión puede tener N comandas.
-- **lineas_comanda**: Detalle facturable. **La factura final es la suma de todas las líneas de todas las comandas de la sesión.**
+## 4. Patrón DTO (Data Transfer Object)
 
-### D. Pagos
-- **peticiones_pago**: Solicitud de cuenta desde la App/Mesa.
-- **pagos_mesa**: Registro de transacciones monetarias (Efectivo, Tarjeta) asociadas a la `id_sesion`.
+Para desacoplar la capa de persistencia de la vista/API:
 
----
+1.  **Ubicación**: Paquete `models`, sufijo `DTO`.
+2.  **Estructura**:
+    *   Mismos campos que la entidad, excluyendo datos sensibles (passwords) y relaciones cíclicas.
+    *   Las relaciones (`ManyToOne`) se representan por su ID (ej: `Integer idRol` en lugar de `RolesEmpleado idRol`).
+3.  **Conversión**:
+    *   Constructor que acepta la Entidad: `public ClienteDTO(Cliente entity)`.
+    *   Método `toEntity()`: Retorna una nueva instancia de la Entidad con los datos del DTO.
 
-## Flujo de Negocio Detallado
+## 5. Inyección de Dependencias
 
-### 1. Llegada y Apertura
-1. Cliente escanea QR -> App obtiene `numero_mesa`.
-2. Empleado abre mesa -> Se crea `sesiones_mesa` (`id_sesion`).
-3. Empleado indica comensales y **Uso de Ludoteca**.
+*   **Prohibido**: Uso de `@Autowired` en campos privados.
+*   **Obligatorio**: Inyección por constructor.
+    *   Declarar campos como `private final`.
+    *   Crear constructor público que reciba las dependencias.
 
-### 2. Activación de Ludoteca (Si aplica)
-Si el grupo decide jugar:
-1. Se inserta registro en `ludoteca_sesiones` con el desglose de pax.
-2. El sistema genera automáticamente una **Comanda de Servicio**:
-    - Crea una `comanda` vinculada a `id_sesion`.
-    - Inserta `lineas_comanda` con los productos `USO_LUDOTECA_*` correspondientes.
-    - Actualiza `ludoteca_sesiones.id_comanda_ludoteca` con el ID de esta comanda.
-3. **Resultado:** El cobro de la ludoteca ya aparece como líneas normales en la cuenta.
+## 6. Reglas para IA Generativa
 
-### 3. Consumo y Pedidos
-1. Camareros toman nota -> Se crean nuevas `comandas` con productos de carta.
-2. Cocina prepara -> Se gestionan estados en `lineas_comanda`.
-
-### 4. Cierre y Cobro
-1. Cliente pide cuenta -> Se registra en `peticiones_pago`.
-2. Sistema calcula el total:
-   `SUM(precio_historico * cantidad)` de todas las `lineas_comanda` donde `comanda.id_sesion = X`.
-   *(Esto incluye automáticamente la comida, la bebida y la ludoteca)*.
-3. Se registra el pago en `pagos_mesa`.
-4. Se cierra la `sesion_mesa`.
+Si una IA genera código para este proyecto, debe:
+1.  Verificar si existe un DTO antes de usar la Entidad en un Controller o Service.
+2.  No usar Lombok `@RequiredArgsConstructor` si se pide explícitamente constructor manual.
+3.  Respetar las validaciones de Jakarta (`@NotNull`, `@Size`, `@Email`) en los DTOs.
+4.  Mantener el estilo de código existente (espaciado, llaves, nombres).
