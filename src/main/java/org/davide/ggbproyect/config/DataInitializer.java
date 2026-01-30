@@ -2,6 +2,7 @@ package org.davide.ggbproyect.config;
 
 import org.davide.ggbproyect.models.Empleado;
 import org.davide.ggbproyect.models.RolesEmpleado;
+import org.davide.ggbproyect.models.enums.EstadoEmpleado;
 import org.davide.ggbproyect.repository.EmpleadoRepository;
 import org.davide.ggbproyect.repository.RolesEmpleadoRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -51,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setIdRol(adminRole);
             admin.setFechaIngreso(LocalDate.now());
-            admin.setEstado("ACTIVO");
+            admin.setEstado(EstadoEmpleado.ACTIVO);
             
             empleadoRepository.save(admin);
             System.out.println("Admin user created: admin@ggbproyect.com / admin123");

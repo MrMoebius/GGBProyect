@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.davide.ggbproyect.models.enums.EstadoMesa;
+import org.davide.ggbproyect.models.enums.UbicacionJuego;
 
 @Data
 @NoArgsConstructor
@@ -37,8 +39,8 @@ public class MesaDTO {
         this.nombreMesa = entity.getNombreMesa();
         this.capacidad = entity.getCapacidad();
         this.zona = entity.getZona();
-        this.ubicacion = entity.getUbicacion();
-        this.estado = entity.getEstado();
+        this.ubicacion = entity.getUbicacion() != null ? entity.getUbicacion().name() : null;
+        this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
     }
 
     public Mesa toEntity() {
@@ -48,8 +50,20 @@ public class MesaDTO {
         entity.setNombreMesa(this.nombreMesa);
         entity.setCapacidad(this.capacidad);
         entity.setZona(this.zona);
-        entity.setUbicacion(this.ubicacion);
-        entity.setEstado(this.estado);
+        if (this.ubicacion != null) {
+            try {
+                entity.setUbicacion(UbicacionJuego.valueOf(this.ubicacion));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
+        if (this.estado != null) {
+            try {
+                entity.setEstado(EstadoMesa.valueOf(this.estado));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
         return entity;
     }
 }

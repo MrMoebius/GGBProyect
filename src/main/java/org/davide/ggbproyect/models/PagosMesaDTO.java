@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.davide.ggbproyect.models.enums.EstadoPago;
+import org.davide.ggbproyect.models.enums.MetodoPago;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -35,8 +37,8 @@ public class PagosMesaDTO {
         this.idSesion = entity.getIdSesion() != null ? entity.getIdSesion().getId() : null;
         this.fechaHora = entity.getFechaHora();
         this.importe = entity.getImporte();
-        this.metodoPago = entity.getMetodoPago();
-        this.estado = entity.getEstado();
+        this.metodoPago = entity.getMetodoPago() != null ? entity.getMetodoPago().name() : null;
+        this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
     }
 
     public PagosMesa toEntity() {
@@ -51,8 +53,20 @@ public class PagosMesaDTO {
 
         entity.setFechaHora(this.fechaHora);
         entity.setImporte(this.importe);
-        entity.setMetodoPago(this.metodoPago);
-        entity.setEstado(this.estado);
+        if (this.metodoPago != null) {
+            try {
+                entity.setMetodoPago(MetodoPago.valueOf(this.metodoPago));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
+        if (this.estado != null) {
+            try {
+                entity.setEstado(EstadoPago.valueOf(this.estado));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
         return entity;
     }
 }

@@ -12,5 +12,11 @@ public enum GeneroJuego {
     PARTY,
     INFANTIL,
     COOPERATIVO,
-    PUZZLE
+    PUZZLE,
+    TERROR,
+    DADOS,
+    SOLITARIO,
+    MAZOS,
+    MINIATURAS,
+    ROLESOCULTOS
 }

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.davide.ggbproyect.models.enums.EstadoEmpleado;
 
 import java.time.LocalDate;
 
@@ -44,7 +45,7 @@ public class EmpleadoDTO {
         this.telefono = entity.getTelefono();
         this.idRol = entity.getIdRol() != null ? entity.getIdRol().getId() : null;
         this.fechaIngreso = entity.getFechaIngreso();
-        this.estado = entity.getEstado();
+        this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
     }
 
     public Empleado toEntity() {
@@ -61,7 +62,13 @@ public class EmpleadoDTO {
         }
 
         entity.setFechaIngreso(this.fechaIngreso);
-        entity.setEstado(this.estado);
+        if (this.estado != null) {
+            try {
+                entity.setEstado(EstadoEmpleado.valueOf(this.estado));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
         return entity;
     }
 }

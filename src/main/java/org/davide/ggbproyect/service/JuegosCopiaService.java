@@ -3,6 +3,7 @@ package org.davide.ggbproyect.service;
 import org.davide.ggbproyect.models.Juego;
 import org.davide.ggbproyect.models.JuegosCopia;
 import org.davide.ggbproyect.models.JuegosCopiaDTO;
+import org.davide.ggbproyect.models.enums.EstadoCopiaJuego;
 import org.davide.ggbproyect.repository.JuegosCopiaRepository;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +44,13 @@ public class JuegosCopiaService {
                 existingCopia.setIdJuego(juego);
             }
             existingCopia.setCodigoInterno(juegosCopiaDTO.getCodigoInterno());
-            existingCopia.setEstado(juegosCopiaDTO.getEstado());
+            if (juegosCopiaDTO.getEstado() != null) {
+                try {
+                    existingCopia.setEstado(EstadoCopiaJuego.valueOf(juegosCopiaDTO.getEstado()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             return new JuegosCopiaDTO(juegosCopiaRepository.save(existingCopia));
         });
     }

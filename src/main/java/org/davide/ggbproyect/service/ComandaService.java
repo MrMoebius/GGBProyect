@@ -3,6 +3,7 @@ package org.davide.ggbproyect.service;
 import org.davide.ggbproyect.models.Comanda;
 import org.davide.ggbproyect.models.ComandaDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
+import org.davide.ggbproyect.models.enums.EstadoComanda;
 import org.davide.ggbproyect.repository.ComandaRepository;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +44,13 @@ public class ComandaService {
                 existingComanda.setIdSesion(sesion);
             }
             existingComanda.setFechaHora(comandaDTO.getFechaHora());
-            existingComanda.setEstado(comandaDTO.getEstado());
+            if (comandaDTO.getEstado() != null) {
+                try {
+                    existingComanda.setEstado(EstadoComanda.valueOf(comandaDTO.getEstado()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             existingComanda.setTotal(comandaDTO.getTotal());
             return new ComandaDTO(comandaRepository.save(existingComanda));
         });

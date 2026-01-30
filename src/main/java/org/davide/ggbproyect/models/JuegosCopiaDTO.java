@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.davide.ggbproyect.models.enums.EstadoCopiaJuego;
 
 @Data
 @NoArgsConstructor
@@ -25,7 +26,7 @@ public class JuegosCopiaDTO {
         this.id = entity.getId();
         this.idJuego = entity.getIdJuego() != null ? entity.getIdJuego().getId() : null;
         this.codigoInterno = entity.getCodigoInterno();
-        this.estado = entity.getEstado();
+        this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
     }
 
     public JuegosCopia toEntity() {
@@ -39,7 +40,13 @@ public class JuegosCopiaDTO {
         }
 
         entity.setCodigoInterno(this.codigoInterno);
-        entity.setEstado(this.estado);
+        if (this.estado != null) {
+            try {
+                entity.setEstado(EstadoCopiaJuego.valueOf(this.estado));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
         return entity;
     }
 }

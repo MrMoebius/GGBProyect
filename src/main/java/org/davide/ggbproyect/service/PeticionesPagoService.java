@@ -3,6 +3,7 @@ package org.davide.ggbproyect.service;
 import org.davide.ggbproyect.models.PeticionesPago;
 import org.davide.ggbproyect.models.PeticionesPagoDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
+import org.davide.ggbproyect.models.enums.MetodoPago;
 import org.davide.ggbproyect.repository.PeticionesPagoRepository;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +43,13 @@ public class PeticionesPagoService {
                 sesion.setId(peticionesPagoDTO.getIdSesion());
                 existingPeticion.setIdSesion(sesion);
             }
-            existingPeticion.setMetodoPreferido(peticionesPagoDTO.getMetodoPreferido());
+            if (peticionesPagoDTO.getMetodoPreferido() != null) {
+                try {
+                    existingPeticion.setMetodoPreferido(MetodoPago.valueOf(peticionesPagoDTO.getMetodoPreferido()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             existingPeticion.setAtendida(peticionesPagoDTO.getAtendida());
             existingPeticion.setFechaPeticion(peticionesPagoDTO.getFechaPeticion());
             return new PeticionesPagoDTO(peticionesPagoRepository.save(existingPeticion));

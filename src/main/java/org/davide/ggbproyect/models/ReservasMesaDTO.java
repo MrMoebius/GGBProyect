@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.davide.ggbproyect.models.enums.EstadoReserva;
 
 import java.time.Instant;
 
@@ -40,7 +41,7 @@ public class ReservasMesaDTO {
         this.fechaHoraFin = entity.getFechaHoraFin();
         this.numPersonas = entity.getNumPersonas();
         this.idJuegoDeseado = entity.getIdJuegoDeseado() != null ? entity.getIdJuegoDeseado().getId() : null;
-        this.estado = entity.getEstado();
+        this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
         this.notas = entity.getNotas();
     }
 
@@ -70,7 +71,13 @@ public class ReservasMesaDTO {
             entity.setIdJuegoDeseado(juego);
         }
 
-        entity.setEstado(this.estado);
+        if (this.estado != null) {
+            try {
+                entity.setEstado(EstadoReserva.valueOf(this.estado));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
         entity.setNotas(this.notas);
         return entity;
     }

@@ -2,6 +2,9 @@ package org.davide.ggbproyect.service;
 
 import org.davide.ggbproyect.models.Juego;
 import org.davide.ggbproyect.models.JuegoDTO;
+import org.davide.ggbproyect.models.enums.ComplejidadJuego;
+import org.davide.ggbproyect.models.enums.IdiomaJuego;
+import org.davide.ggbproyect.models.enums.UbicacionJuego;
 import org.davide.ggbproyect.repository.JuegoRepository;
 import org.springframework.stereotype.Service;
 
@@ -40,11 +43,29 @@ public class JuegoService {
             existingJuego.setMinJugadores(juegoDTO.getMinJugadores());
             existingJuego.setMaxJugadores(juegoDTO.getMaxJugadores());
             existingJuego.setDuracionMediaMin(juegoDTO.getDuracionMediaMin());
-            existingJuego.setComplejidad(juegoDTO.getComplejidad());
+            if (juegoDTO.getComplejidad() != null) {
+                try {
+                    existingJuego.setComplejidad(ComplejidadJuego.valueOf(juegoDTO.getComplejidad()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             existingJuego.setGenero(juegoDTO.getGenero());
-            existingJuego.setIdioma(juegoDTO.getIdioma());
+            if (juegoDTO.getIdioma() != null) {
+                try {
+                    existingJuego.setIdioma(IdiomaJuego.valueOf(juegoDTO.getIdioma()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             existingJuego.setDescripcion(juegoDTO.getDescripcion());
-            existingJuego.setUbicacion(juegoDTO.getUbicacion());
+            if (juegoDTO.getUbicacion() != null) {
+                try {
+                    existingJuego.setUbicacion(UbicacionJuego.valueOf(juegoDTO.getUbicacion()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             existingJuego.setRecomendadoDosJugadores(juegoDTO.getRecomendadoDosJugadores());
             existingJuego.setActivo(juegoDTO.getActivo());
             return new JuegoDTO(juegoRepository.save(existingJuego));

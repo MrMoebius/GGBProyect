@@ -5,6 +5,7 @@ import org.davide.ggbproyect.models.Juego;
 import org.davide.ggbproyect.models.Mesa;
 import org.davide.ggbproyect.models.ReservasMesa;
 import org.davide.ggbproyect.models.ReservasMesaDTO;
+import org.davide.ggbproyect.models.enums.EstadoReserva;
 import org.davide.ggbproyect.repository.ReservasMesaRepository;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +64,13 @@ public class ReservasMesaService {
             } else {
                 existingReserva.setIdJuegoDeseado(null);
             }
-            existingReserva.setEstado(reservasMesaDTO.getEstado());
+            if (reservasMesaDTO.getEstado() != null) {
+                try {
+                    existingReserva.setEstado(EstadoReserva.valueOf(reservasMesaDTO.getEstado()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             existingReserva.setNotas(reservasMesaDTO.getNotas());
             return new ReservasMesaDTO(reservasMesaRepository.save(existingReserva));
         });
