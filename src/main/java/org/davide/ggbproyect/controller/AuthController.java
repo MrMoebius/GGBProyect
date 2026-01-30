@@ -28,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginDto.getEmail(), loginDto.getPassword()));
 
@@ -42,10 +42,11 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .orElse("ROLE_CLIENTE"); // Default fallback
 
-        Map<String, String> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
         response.put("accessToken", token);
         response.put("tokenType", "Bearer");
         response.put("role", role);
+        response.put("email", authentication.getName()); // Add email to response
 
         return ResponseEntity.ok(response);
     }
