@@ -2,8 +2,8 @@ package org.davide.ggbproyect.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.EstadoComanda;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -32,10 +32,10 @@ public class Comanda {
     @Column(name = "fecha_hora")
     private LocalDateTime fechaHora;
 
-    @Size(max = 20)
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'PENDIENTE'")
     @Column(name = "estado", length = 20)
-    private String estado;
+    private EstadoComanda estado;
 
     @Column(name = "total", precision = 10, scale = 2)
     private BigDecimal total;

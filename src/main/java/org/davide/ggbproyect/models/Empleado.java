@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.EstadoEmpleado;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -50,10 +51,10 @@ public class Empleado {
     @Column(name = "fecha_ingreso")
     private LocalDate fechaIngreso;
 
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'ACTIVO'")
     @Column(name = "estado", length = 50)
-    private String estado;
+    private EstadoEmpleado estado;
 
     @Override
     public final boolean equals(Object o) {

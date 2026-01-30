@@ -36,8 +36,10 @@ public class MesaService {
 
     public Optional<MesaDTO> update(Integer id, MesaDTO mesaDTO) {
         return mesaRepository.findById(id).map(existingMesa -> {
+            existingMesa.setNumeroMesa(mesaDTO.getNumeroMesa());
             existingMesa.setNombreMesa(mesaDTO.getNombreMesa());
             existingMesa.setCapacidad(mesaDTO.getCapacidad());
+            existingMesa.setZona(mesaDTO.getZona());
             existingMesa.setUbicacion(mesaDTO.getUbicacion());
             existingMesa.setEstado(mesaDTO.getEstado());
             return new MesaDTO(mesaRepository.save(existingMesa));

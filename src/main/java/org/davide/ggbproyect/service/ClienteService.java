@@ -18,12 +18,6 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final EmpleadoRepository empleadoRepository;
 
-//    public ClienteService(ClienteRepository clienteRepository,
-//                          EmpleadoRepository empleadoRepository) {
-//        this.clienteRepository = clienteRepository;
-//        this.empleadoRepository = empleadoRepository;
-//    }
-
     public List<ClienteDTO> getAll() {
         return clienteRepository.findAll().stream()
                 .map(ClienteDTO::new)
