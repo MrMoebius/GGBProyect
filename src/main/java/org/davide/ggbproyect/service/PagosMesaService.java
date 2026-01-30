@@ -3,6 +3,8 @@ package org.davide.ggbproyect.service;
 import org.davide.ggbproyect.models.PagosMesa;
 import org.davide.ggbproyect.models.PagosMesaDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
+import org.davide.ggbproyect.models.enums.EstadoPago;
+import org.davide.ggbproyect.models.enums.MetodoPago;
 import org.davide.ggbproyect.repository.PagosMesaRepository;
 import org.springframework.stereotype.Service;
 
@@ -44,8 +46,20 @@ public class PagosMesaService {
             }
             existingPago.setFechaHora(pagosMesaDTO.getFechaHora());
             existingPago.setImporte(pagosMesaDTO.getImporte());
-            existingPago.setMetodoPago(pagosMesaDTO.getMetodoPago());
-            existingPago.setEstado(pagosMesaDTO.getEstado());
+            if (pagosMesaDTO.getMetodoPago() != null) {
+                try {
+                    existingPago.setMetodoPago(MetodoPago.valueOf(pagosMesaDTO.getMetodoPago()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
+            if (pagosMesaDTO.getEstado() != null) {
+                try {
+                    existingPago.setEstado(EstadoPago.valueOf(pagosMesaDTO.getEstado()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             return new PagosMesaDTO(pagosMesaRepository.save(existingPago));
         });
     }

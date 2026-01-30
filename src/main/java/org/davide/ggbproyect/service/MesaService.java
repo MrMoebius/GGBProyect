@@ -2,6 +2,8 @@ package org.davide.ggbproyect.service;
 
 import org.davide.ggbproyect.models.Mesa;
 import org.davide.ggbproyect.models.MesaDTO;
+import org.davide.ggbproyect.models.enums.EstadoMesa;
+import org.davide.ggbproyect.models.enums.UbicacionJuego;
 import org.davide.ggbproyect.repository.MesaRepository;
 import org.springframework.stereotype.Service;
 
@@ -36,10 +38,24 @@ public class MesaService {
 
     public Optional<MesaDTO> update(Integer id, MesaDTO mesaDTO) {
         return mesaRepository.findById(id).map(existingMesa -> {
+            existingMesa.setNumeroMesa(mesaDTO.getNumeroMesa());
             existingMesa.setNombreMesa(mesaDTO.getNombreMesa());
             existingMesa.setCapacidad(mesaDTO.getCapacidad());
-            existingMesa.setUbicacion(mesaDTO.getUbicacion());
-            existingMesa.setEstado(mesaDTO.getEstado());
+            existingMesa.setZona(mesaDTO.getZona());
+            if (mesaDTO.getUbicacion() != null) {
+                try {
+                    existingMesa.setUbicacion(UbicacionJuego.valueOf(mesaDTO.getUbicacion()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
+            if (mesaDTO.getEstado() != null) {
+                try {
+                    existingMesa.setEstado(EstadoMesa.valueOf(mesaDTO.getEstado()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             return new MesaDTO(mesaRepository.save(existingMesa));
         });
     }

@@ -2,8 +2,8 @@ package org.davide.ggbproyect.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.EstadoSesion;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -34,10 +34,10 @@ public class SesionesMesa {
     @Column(name = "fin")
     private LocalDateTime fin;
 
-    @Size(max = 20)
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'ACTIVA'")
     @Column(name = "estado", length = 20)
-    private String estado;
+    private EstadoSesion estado;
 
     @Override
     public final boolean equals(Object o) {

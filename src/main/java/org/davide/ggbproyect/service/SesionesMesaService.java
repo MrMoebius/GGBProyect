@@ -3,6 +3,7 @@ package org.davide.ggbproyect.service;
 import org.davide.ggbproyect.models.Mesa;
 import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.models.SesionesMesaDTO;
+import org.davide.ggbproyect.models.enums.EstadoSesion;
 import org.davide.ggbproyect.repository.SesionesMesaRepository;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +45,13 @@ public class SesionesMesaService {
             }
             existingSesion.setInicio(sesionesMesaDTO.getInicio());
             existingSesion.setFin(sesionesMesaDTO.getFin());
-            existingSesion.setEstado(sesionesMesaDTO.getEstado());
+            if (sesionesMesaDTO.getEstado() != null) {
+                try {
+                    existingSesion.setEstado(EstadoSesion.valueOf(sesionesMesaDTO.getEstado()));
+                } catch (IllegalArgumentException e) {
+                    // Handle invalid enum
+                }
+            }
             return new SesionesMesaDTO(sesionesMesaRepository.save(existingSesion));
         });
     }

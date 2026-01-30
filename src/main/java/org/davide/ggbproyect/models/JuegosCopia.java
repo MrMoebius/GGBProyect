@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.EstadoCopiaJuego;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -31,10 +32,10 @@ public class JuegosCopia {
     @Column(name = "codigo_interno", length = 50)
     private String codigoInterno;
 
-    @Size(max = 30)
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'DISPONIBLE'")
     @Column(name = "estado", length = 30)
-    private String estado;
+    private EstadoCopiaJuego estado;
 
     @Override
     public final boolean equals(Object o) {

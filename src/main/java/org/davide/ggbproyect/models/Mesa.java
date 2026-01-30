@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.EstadoMesa;
+import org.davide.ggbproyect.models.enums.UbicacionJuego;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -21,22 +23,30 @@ public class Mesa {
     @Column(name = "id_mesa", nullable = false)
     private Integer id;
 
+    @NotNull
+    @Column(name = "numero_mesa", nullable = false, unique = true)
+    private Integer numeroMesa;
+
     @Size(max = 50)
     @NotNull
     @Column(name = "nombre_mesa", nullable = false, length = 50)
     private String nombreMesa;
 
-    @Column(name = "capacidad")
+    @Column(name = "capacidad", nullable = false)
     private Integer capacidad;
 
     @Size(max = 50)
-    @Column(name = "ubicacion", length = 50)
-    private String ubicacion;
+    @Column(name = "zona", length = 50)
+    private String zona;
 
-    @Size(max = 20)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ubicacion", length = 50)
+    private UbicacionJuego ubicacion;
+
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'LIBRE'")
     @Column(name = "estado", length = 20)
-    private String estado;
+    private EstadoMesa estado;
 
     @Override
     public final boolean equals(Object o) {

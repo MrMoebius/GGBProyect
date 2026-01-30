@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.ComplejidadJuego;
+import org.davide.ggbproyect.models.enums.IdiomaJuego;
+import org.davide.ggbproyect.models.enums.UbicacionJuego;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -35,25 +38,25 @@ public class Juego {
     @Column(name = "duracion_media_min")
     private Integer duracionMediaMin;
 
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "complejidad", length = 50)
-    private String complejidad;
+    private ComplejidadJuego complejidad;
 
-    @Size(max = 100)
-    @Column(name = "genero", length = 100)
-    private String genero;
+    @Size(max = 255)
+    @Column(name = "genero", length = 255)
+    private String genero; // String para guardar múltiples valores separados por coma
 
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "idioma", length = 50)
-    private String idioma;
+    private IdiomaJuego idioma;
 
     @Lob
     @Column(name = "descripcion")
     private String descripcion;
 
-    @Size(max = 100)
+    @Enumerated(EnumType.STRING)
     @Column(name = "ubicacion", length = 100)
-    private String ubicacion;
+    private UbicacionJuego ubicacion;
 
     @ColumnDefault("0")
     @Column(name = "recomendado_dos_jugadores")

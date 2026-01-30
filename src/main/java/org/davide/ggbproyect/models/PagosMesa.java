@@ -2,8 +2,9 @@ package org.davide.ggbproyect.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.EstadoPago;
+import org.davide.ggbproyect.models.enums.MetodoPago;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -40,14 +41,14 @@ public class PagosMesa {
     @Column(name = "importe", nullable = false, precision = 10, scale = 2)
     private BigDecimal importe;
 
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "metodo_pago", length = 50)
-    private String metodoPago;
+    private MetodoPago metodoPago;
 
-    @Size(max = 30)
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'PENDIENTE'")
     @Column(name = "estado", length = 30)
-    private String estado;
+    private EstadoPago estado;
 
     @Override
     public final boolean equals(Object o) {

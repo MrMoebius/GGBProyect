@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.davide.ggbproyect.models.enums.MetodoPago;
 
 import java.time.Instant;
 
@@ -27,7 +28,7 @@ public class PeticionesPagoDTO {
     public PeticionesPagoDTO(PeticionesPago entity) {
         this.id = entity.getId();
         this.idSesion = entity.getIdSesion() != null ? entity.getIdSesion().getId() : null;
-        this.metodoPreferido = entity.getMetodoPreferido();
+        this.metodoPreferido = entity.getMetodoPreferido() != null ? entity.getMetodoPreferido().name() : null;
         this.atendida = entity.getAtendida();
         this.fechaPeticion = entity.getFechaPeticion();
     }
@@ -42,7 +43,13 @@ public class PeticionesPagoDTO {
             entity.setIdSesion(sesion);
         }
 
-        entity.setMetodoPreferido(this.metodoPreferido);
+        if (this.metodoPreferido != null) {
+            try {
+                entity.setMetodoPreferido(MetodoPago.valueOf(this.metodoPreferido));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
         entity.setAtendida(this.atendida);
         entity.setFechaPeticion(this.fechaPeticion);
         return entity;

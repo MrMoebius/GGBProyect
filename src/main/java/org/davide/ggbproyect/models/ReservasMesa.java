@@ -2,8 +2,8 @@ package org.davide.ggbproyect.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.EstadoReserva;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -52,10 +52,10 @@ public class ReservasMesa {
     @ToString.Exclude
     private Juego idJuegoDeseado;
 
-    @Size(max = 30)
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'PENDIENTE'")
     @Column(name = "estado", length = 30)
-    private String estado;
+    private EstadoReserva estado;
 
     @Lob
     @Column(name = "notas")

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.davide.ggbproyect.models.enums.EstadoSesion;
 
 import java.time.LocalDateTime;
 
@@ -29,7 +30,7 @@ public class SesionesMesaDTO {
         this.idMesa = entity.getIdMesa() != null ? entity.getIdMesa().getId() : null;
         this.inicio = entity.getInicio();
         this.fin = entity.getFin();
-        this.estado = entity.getEstado();
+        this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
     }
 
     public SesionesMesa toEntity() {
@@ -44,7 +45,13 @@ public class SesionesMesaDTO {
         
         entity.setInicio(this.inicio);
         entity.setFin(this.fin);
-        entity.setEstado(this.estado);
+        if (this.estado != null) {
+            try {
+                entity.setEstado(EstadoSesion.valueOf(this.estado));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
         return entity;
     }
 }

@@ -2,8 +2,8 @@ package org.davide.ggbproyect.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.davide.ggbproyect.models.enums.MetodoPago;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -31,9 +31,9 @@ public class PeticionesPago {
     @ToString.Exclude
     private SesionesMesa idSesion;
 
-    @Size(max = 20)
+    @Enumerated(EnumType.STRING)
     @Column(name = "metodo_preferido", length = 20)
-    private String metodoPreferido;
+    private MetodoPago metodoPreferido;
 
     @ColumnDefault("0")
     @Column(name = "atendida")

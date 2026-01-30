@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.davide.ggbproyect.models.enums.EstadoComanda;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,7 +30,7 @@ public class ComandaDTO {
         this.id = entity.getId();
         this.idSesion = entity.getIdSesion() != null ? entity.getIdSesion().getId() : null;
         this.fechaHora = entity.getFechaHora();
-        this.estado = entity.getEstado();
+        this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
         this.total = entity.getTotal();
     }
 
@@ -44,7 +45,13 @@ public class ComandaDTO {
         }
         
         entity.setFechaHora(this.fechaHora);
-        entity.setEstado(this.estado);
+        if (this.estado != null) {
+            try {
+                entity.setEstado(EstadoComanda.valueOf(this.estado));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+            }
+        }
         entity.setTotal(this.total);
         return entity;
     }
