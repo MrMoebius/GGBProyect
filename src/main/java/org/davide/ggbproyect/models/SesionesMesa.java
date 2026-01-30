@@ -5,11 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -30,28 +28,15 @@ public class SesionesMesa {
     @ToString.Exclude
     private Mesa idMesa;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "id_reserva")
-    @ToString.Exclude
-    private ReservasMesa idReserva;
+    @Column(name = "inicio")
+    private LocalDateTime inicio;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "id_empleado_apertura")
-    @ToString.Exclude
-    private Empleado idEmpleadoApertura;
+    @Column(name = "fin")
+    private LocalDateTime fin;
 
-    @NotNull
-    @Column(name = "fecha_hora_apertura", nullable = false)
-    private Instant fechaHoraApertura;
-
-    @Column(name = "fecha_hora_cierre")
-    private Instant fechaHoraCierre;
-
-    @Size(max = 30)
-    @ColumnDefault("'ABIERTA'")
-    @Column(name = "estado", length = 30)
+    @Size(max = 20)
+    @ColumnDefault("'ACTIVA'")
+    @Column(name = "estado", length = 20)
     private String estado;
 
     @Override

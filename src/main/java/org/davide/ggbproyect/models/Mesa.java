@@ -21,21 +21,21 @@ public class Mesa {
     @Column(name = "id_mesa", nullable = false)
     private Integer id;
 
+    @Size(max = 50)
     @NotNull
-    @Column(name = "numero_mesa", nullable = false)
-    private Integer numeroMesa;
+    @Column(name = "nombre_mesa", nullable = false, length = 50)
+    private String nombreMesa;
 
-    @NotNull
-    @Column(name = "capacidad", nullable = false)
+    @Column(name = "capacidad")
     private Integer capacidad;
 
     @Size(max = 50)
-    @Column(name = "zona", length = 50)
-    private String zona;
+    @Column(name = "ubicacion", length = 50)
+    private String ubicacion;
 
-    @Size(max = 30)
+    @Size(max = 20)
     @ColumnDefault("'LIBRE'")
-    @Column(name = "estado", length = 30)
+    @Column(name = "estado", length = 20)
     private String estado;
 
     @Override
