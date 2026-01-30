@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -28,12 +29,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // Try to find employee first
         Optional<Empleado> empleado = empleadoRepository.findByEmail(email);
         if (empleado.isPresent()) {
+            // Force initialization of the lazy-loaded role
+            String roleName = empleado.get().getIdRol().getNombreRol();
+            
             Set<GrantedAuthority> authorities = Collections.singleton(
-                    new SimpleGrantedAuthority("ROLE_" + empleado.get().getIdRol().getNombreRol())
+                    new SimpleGrantedAuthority("ROLE_" + roleName)
             );
             return new User(empleado.get().getEmail(), empleado.get().getPassword(), authorities);
         }

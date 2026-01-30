@@ -1,8 +1,6 @@
 package org.davide.ggbproyect.service;
 
-import org.davide.ggbproyect.models.Empleado;
 import org.davide.ggbproyect.models.Mesa;
-import org.davide.ggbproyect.models.ReservasMesa;
 import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.models.SesionesMesaDTO;
 import org.davide.ggbproyect.repository.SesionesMesaRepository;
@@ -44,22 +42,8 @@ public class SesionesMesaService {
                 mesa.setId(sesionesMesaDTO.getIdMesa());
                 existingSesion.setIdMesa(mesa);
             }
-            if (sesionesMesaDTO.getIdReserva() != null) {
-                ReservasMesa reserva = new ReservasMesa();
-                reserva.setId(sesionesMesaDTO.getIdReserva());
-                existingSesion.setIdReserva(reserva);
-            } else {
-                existingSesion.setIdReserva(null);
-            }
-            if (sesionesMesaDTO.getIdEmpleadoApertura() != null) {
-                Empleado empleado = new Empleado();
-                empleado.setId(sesionesMesaDTO.getIdEmpleadoApertura());
-                existingSesion.setIdEmpleadoApertura(empleado);
-            } else {
-                existingSesion.setIdEmpleadoApertura(null);
-            }
-            existingSesion.setFechaHoraApertura(sesionesMesaDTO.getFechaHoraApertura());
-            existingSesion.setFechaHoraCierre(sesionesMesaDTO.getFechaHoraCierre());
+            existingSesion.setInicio(sesionesMesaDTO.getInicio());
+            existingSesion.setFin(sesionesMesaDTO.getFin());
             existingSesion.setEstado(sesionesMesaDTO.getEstado());
             return new SesionesMesaDTO(sesionesMesaRepository.save(existingSesion));
         });
