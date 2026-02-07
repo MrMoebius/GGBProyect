@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservasMesaDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     private Integer idCliente;
@@ -75,7 +77,7 @@ public class ReservasMesaDTO {
             try {
                 entity.setEstado(EstadoReserva.valueOf(this.estado));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum
+                throw new IllegalArgumentException("Valor de estado invalido: " + this.estado);
             }
         }
         entity.setNotas(this.notas);

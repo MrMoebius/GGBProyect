@@ -6,12 +6,15 @@ import org.davide.ggbproyect.models.ReservasJuegoDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.repository.ReservasJuegoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class ReservasJuegoService {
 
     private final ReservasJuegoRepository reservasJuegoRepository;
@@ -26,9 +29,10 @@ public class ReservasJuegoService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<ReservasJuegoDTO> getById(Integer id) {
+    public ReservasJuegoDTO getById(Integer id) {
         return reservasJuegoRepository.findById(id)
-                .map(ReservasJuegoDTO::new);
+                .map(ReservasJuegoDTO::new)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva de juego con id " + id + " no encontrada"));
     }
 
     public ReservasJuegoDTO create(ReservasJuegoDTO reservasJuegoDTO) {
@@ -36,30 +40,36 @@ public class ReservasJuegoService {
         return new ReservasJuegoDTO(reservasJuegoRepository.save(reservasJuego));
     }
 
-    public Optional<ReservasJuegoDTO> update(Integer id, ReservasJuegoDTO reservasJuegoDTO) {
-        return reservasJuegoRepository.findById(id).map(existingReserva -> {
-            if (reservasJuegoDTO.getIdSesion() != null) {
-                SesionesMesa sesion = new SesionesMesa();
-                sesion.setId(reservasJuegoDTO.getIdSesion());
-                existingReserva.setIdSesion(sesion);
-            }
-            if (reservasJuegoDTO.getIdCopia() != null) {
-                JuegosCopia copia = new JuegosCopia();
-                copia.setId(reservasJuegoDTO.getIdCopia());
-                existingReserva.setIdCopia(copia);
-            }
-            existingReserva.setHoraInicio(reservasJuegoDTO.getHoraInicio());
-            existingReserva.setHoraFin(reservasJuegoDTO.getHoraFin());
-            existingReserva.setEstado(reservasJuegoDTO.getEstado());
-            return new ReservasJuegoDTO(reservasJuegoRepository.save(existingReserva));
-        });
+    public ReservasJuegoDTO update(Integer id, ReservasJuegoDTO reservasJuegoDTO) {
+        ReservasJuego existingReserva = reservasJuegoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva de juego con id " + id + " no encontrada"));
+        if (reservasJuegoDTO.getIdSesion() != null) {
+            SesionesMesa sesion = new SesionesMesa();
+            sesion.setId(reservasJuegoDTO.getIdSesion());
+            existingReserva.setIdSesion(sesion);
+        }
+        if (reservasJuegoDTO.getIdCopia() != null) {
+            JuegosCopia copia = new JuegosCopia();
+            copia.setId(reservasJuegoDTO.getIdCopia());
+            existingReserva.setIdCopia(copia);
+        }
+        existingReserva.setHoraInicio(reservasJuegoDTO.getHoraInicio());
+        existingReserva.setHoraFin(reservasJuegoDTO.getHoraFin());
+        existingReserva.setEstado(reservasJuegoDTO.getEstado());
+        return new ReservasJuegoDTO(reservasJuegoRepository.save(existingReserva));
     }
 
-    public boolean delete(Integer id) {
-        if (reservasJuegoRepository.existsById(id)) {
-            reservasJuegoRepository.deleteById(id);
-            return true;
+    public List<ReservasJuegoDTO> filter(Integer idSesion, Integer idCopia, String estado) {
+        return reservasJuegoRepository.filter(idSesion, idCopia, estado)
+                .stream()
+                .map(ReservasJuegoDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public void delete(Integer id) {
+        if (!reservasJuegoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Reserva de juego con id " + id + " no encontrada");
         }
-        return false;
+        reservasJuegoRepository.deleteById(id);
     }
 }

@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,7 @@ import org.davide.ggbproyect.models.enums.EstadoCopiaJuego;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JuegosCopiaDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @NotNull
@@ -44,7 +46,7 @@ public class JuegosCopiaDTO {
             try {
                 entity.setEstado(EstadoCopiaJuego.valueOf(this.estado));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum
+                throw new IllegalArgumentException("Valor de estado invalido: " + this.estado);
             }
         }
         return entity;

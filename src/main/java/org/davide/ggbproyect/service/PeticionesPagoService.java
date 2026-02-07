@@ -6,12 +6,15 @@ import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.models.enums.MetodoPago;
 import org.davide.ggbproyect.repository.PeticionesPagoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class PeticionesPagoService {
 
     private final PeticionesPagoRepository peticionesPagoRepository;
@@ -26,9 +29,10 @@ public class PeticionesPagoService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<PeticionesPagoDTO> getById(Integer id) {
+    public PeticionesPagoDTO getById(Integer id) {
         return peticionesPagoRepository.findById(id)
-                .map(PeticionesPagoDTO::new);
+                .map(PeticionesPagoDTO::new)
+                .orElseThrow(() -> new EntityNotFoundException("Peticion de pago con id " + id + " no encontrada"));
     }
 
     public PeticionesPagoDTO create(PeticionesPagoDTO peticionesPagoDTO) {
@@ -36,31 +40,37 @@ public class PeticionesPagoService {
         return new PeticionesPagoDTO(peticionesPagoRepository.save(peticionesPago));
     }
 
-    public Optional<PeticionesPagoDTO> update(Integer id, PeticionesPagoDTO peticionesPagoDTO) {
-        return peticionesPagoRepository.findById(id).map(existingPeticion -> {
-            if (peticionesPagoDTO.getIdSesion() != null) {
-                SesionesMesa sesion = new SesionesMesa();
-                sesion.setId(peticionesPagoDTO.getIdSesion());
-                existingPeticion.setIdSesion(sesion);
+    public PeticionesPagoDTO update(Integer id, PeticionesPagoDTO peticionesPagoDTO) {
+        PeticionesPago existingPeticion = peticionesPagoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Peticion de pago con id " + id + " no encontrada"));
+        if (peticionesPagoDTO.getIdSesion() != null) {
+            SesionesMesa sesion = new SesionesMesa();
+            sesion.setId(peticionesPagoDTO.getIdSesion());
+            existingPeticion.setIdSesion(sesion);
+        }
+        if (peticionesPagoDTO.getMetodoPreferido() != null) {
+            try {
+                existingPeticion.setMetodoPreferido(MetodoPago.valueOf(peticionesPagoDTO.getMetodoPreferido()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Valor de metodo preferido invalido: " + peticionesPagoDTO.getMetodoPreferido());
             }
-            if (peticionesPagoDTO.getMetodoPreferido() != null) {
-                try {
-                    existingPeticion.setMetodoPreferido(MetodoPago.valueOf(peticionesPagoDTO.getMetodoPreferido()));
-                } catch (IllegalArgumentException e) {
-                    // Handle invalid enum
-                }
-            }
-            existingPeticion.setAtendida(peticionesPagoDTO.getAtendida());
-            existingPeticion.setFechaPeticion(peticionesPagoDTO.getFechaPeticion());
-            return new PeticionesPagoDTO(peticionesPagoRepository.save(existingPeticion));
-        });
+        }
+        existingPeticion.setAtendida(peticionesPagoDTO.getAtendida());
+        existingPeticion.setFechaPeticion(peticionesPagoDTO.getFechaPeticion());
+        return new PeticionesPagoDTO(peticionesPagoRepository.save(existingPeticion));
     }
 
-    public boolean delete(Integer id) {
-        if (peticionesPagoRepository.existsById(id)) {
-            peticionesPagoRepository.deleteById(id);
-            return true;
+    public List<PeticionesPagoDTO> filter(Integer idSesion, String metodoPreferido, Boolean atendida) {
+        return peticionesPagoRepository.filter(idSesion, metodoPreferido, atendida)
+                .stream()
+                .map(PeticionesPagoDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public void delete(Integer id) {
+        if (!peticionesPagoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Peticion de pago con id " + id + " no encontrada");
         }
-        return false;
+        peticionesPagoRepository.deleteById(id);
     }
 }

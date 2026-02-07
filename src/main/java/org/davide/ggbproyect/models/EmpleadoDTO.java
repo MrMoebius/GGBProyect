@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmpleadoDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @Size(max = 100)
@@ -28,7 +30,8 @@ public class EmpleadoDTO {
     @Size(max = 20)
     private String telefono;
 
-    // Password excluded
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
 
     @NotNull
     private Integer idRol;
@@ -66,7 +69,7 @@ public class EmpleadoDTO {
             try {
                 entity.setEstado(EstadoEmpleado.valueOf(this.estado));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum
+                throw new IllegalArgumentException("Valor de estado invalido: " + this.estado);
             }
         }
         return entity;

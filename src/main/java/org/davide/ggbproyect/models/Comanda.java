@@ -8,7 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -30,7 +30,7 @@ public class Comanda {
     private SesionesMesa idSesion;
 
     @Column(name = "fecha_hora")
-    private LocalDateTime fechaHora;
+    private Instant fechaHora;
 
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'PENDIENTE'")

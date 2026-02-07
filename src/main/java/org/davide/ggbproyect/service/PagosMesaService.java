@@ -7,12 +7,15 @@ import org.davide.ggbproyect.models.enums.EstadoPago;
 import org.davide.ggbproyect.models.enums.MetodoPago;
 import org.davide.ggbproyect.repository.PagosMesaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class PagosMesaService {
 
     private final PagosMesaRepository pagosMesaRepository;
@@ -27,9 +30,10 @@ public class PagosMesaService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<PagosMesaDTO> getById(Integer id) {
+    public PagosMesaDTO getById(Integer id) {
         return pagosMesaRepository.findById(id)
-                .map(PagosMesaDTO::new);
+                .map(PagosMesaDTO::new)
+                .orElseThrow(() -> new EntityNotFoundException("Pago de mesa con id " + id + " no encontrado"));
     }
 
     public PagosMesaDTO create(PagosMesaDTO pagosMesaDTO) {
@@ -37,38 +41,44 @@ public class PagosMesaService {
         return new PagosMesaDTO(pagosMesaRepository.save(pagosMesa));
     }
 
-    public Optional<PagosMesaDTO> update(Integer id, PagosMesaDTO pagosMesaDTO) {
-        return pagosMesaRepository.findById(id).map(existingPago -> {
-            if (pagosMesaDTO.getIdSesion() != null) {
-                SesionesMesa sesion = new SesionesMesa();
-                sesion.setId(pagosMesaDTO.getIdSesion());
-                existingPago.setIdSesion(sesion);
+    public PagosMesaDTO update(Integer id, PagosMesaDTO pagosMesaDTO) {
+        PagosMesa existingPago = pagosMesaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pago de mesa con id " + id + " no encontrado"));
+        if (pagosMesaDTO.getIdSesion() != null) {
+            SesionesMesa sesion = new SesionesMesa();
+            sesion.setId(pagosMesaDTO.getIdSesion());
+            existingPago.setIdSesion(sesion);
+        }
+        existingPago.setFechaHora(pagosMesaDTO.getFechaHora());
+        existingPago.setImporte(pagosMesaDTO.getImporte());
+        if (pagosMesaDTO.getMetodoPago() != null) {
+            try {
+                existingPago.setMetodoPago(MetodoPago.valueOf(pagosMesaDTO.getMetodoPago()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Valor de metodo de pago invalido: " + pagosMesaDTO.getMetodoPago());
             }
-            existingPago.setFechaHora(pagosMesaDTO.getFechaHora());
-            existingPago.setImporte(pagosMesaDTO.getImporte());
-            if (pagosMesaDTO.getMetodoPago() != null) {
-                try {
-                    existingPago.setMetodoPago(MetodoPago.valueOf(pagosMesaDTO.getMetodoPago()));
-                } catch (IllegalArgumentException e) {
-                    // Handle invalid enum
-                }
+        }
+        if (pagosMesaDTO.getEstado() != null) {
+            try {
+                existingPago.setEstado(EstadoPago.valueOf(pagosMesaDTO.getEstado()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Valor de estado invalido: " + pagosMesaDTO.getEstado());
             }
-            if (pagosMesaDTO.getEstado() != null) {
-                try {
-                    existingPago.setEstado(EstadoPago.valueOf(pagosMesaDTO.getEstado()));
-                } catch (IllegalArgumentException e) {
-                    // Handle invalid enum
-                }
-            }
-            return new PagosMesaDTO(pagosMesaRepository.save(existingPago));
-        });
+        }
+        return new PagosMesaDTO(pagosMesaRepository.save(existingPago));
     }
 
-    public boolean delete(Integer id) {
-        if (pagosMesaRepository.existsById(id)) {
-            pagosMesaRepository.deleteById(id);
-            return true;
+    public List<PagosMesaDTO> filter(Integer idSesion, String metodoPago, String estado) {
+        return pagosMesaRepository.filter(idSesion, metodoPago, estado)
+                .stream()
+                .map(PagosMesaDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public void delete(Integer id) {
+        if (!pagosMesaRepository.existsById(id)) {
+            throw new EntityNotFoundException("Pago de mesa con id " + id + " no encontrado");
         }
-        return false;
+        pagosMesaRepository.deleteById(id);
     }
 }

@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PeticionesPagoDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @NotNull
@@ -47,7 +49,7 @@ public class PeticionesPagoDTO {
             try {
                 entity.setMetodoPreferido(MetodoPago.valueOf(this.metodoPreferido));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum
+                throw new IllegalArgumentException("Valor de metodo preferido invalido: " + this.metodoPreferido);
             }
         }
         entity.setAtendida(this.atendida);

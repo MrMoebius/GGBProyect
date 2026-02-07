@@ -5,9 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.davide.ggbproyect.models.enums.EstadoSesion;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -29,15 +31,42 @@ public class SesionesMesa {
     private Mesa idMesa;
 
     @Column(name = "inicio")
-    private LocalDateTime inicio;
+    private Instant inicio;
 
     @Column(name = "fin")
-    private LocalDateTime fin;
+    private Instant fin;
 
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'ACTIVA'")
     @Column(name = "estado", length = 20)
     private EstadoSesion estado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "id_reserva")
+    private ReservasMesa idReserva;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "id_empleado_apertura")
+    private Empleado idEmpleadoApertura;
+
+    @NotNull
+    @Column(name = "fecha_hora_apertura", nullable = false)
+    private Instant fechaHoraApertura;
+
+    @Column(name = "fecha_hora_cierre")
+    private Instant fechaHoraCierre;
+
+    @PrePersist
+    protected void onCreate() {
+        if (fechaHoraApertura == null) {
+            fechaHoraApertura = Instant.now();
+        }
+        if (estado == null) {
+            estado = EstadoSesion.ACTIVA;
+        }
+    }
 
     @Override
     public final boolean equals(Object o) {
