@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.controller;
 
+import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.LoginDto;
 import org.davide.ggbproyect.security.JwtTokenProvider;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginDto.getEmail(), loginDto.getPassword()));
 

@@ -5,12 +5,15 @@ import org.davide.ggbproyect.models.RolesEmpleadoDTO;
 import org.davide.ggbproyect.repository.EmpleadoRepository;
 import org.davide.ggbproyect.repository.RolesEmpleadoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class RolesEmpleadoService {
 
     private final RolesEmpleadoRepository rolesEmpleadoRepository;
@@ -27,9 +30,10 @@ public class RolesEmpleadoService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<RolesEmpleadoDTO> getById(Integer id) {
+    public RolesEmpleadoDTO getById(Integer id) {
         return rolesEmpleadoRepository.findById(id)
-                .map(RolesEmpleadoDTO::new);
+                .map(RolesEmpleadoDTO::new)
+                .orElseThrow(() -> new EntityNotFoundException("Rol de empleado con id " + id + " no encontrado"));
     }
 
     public RolesEmpleadoDTO create(RolesEmpleadoDTO rolesEmpleadoDTO) {
@@ -37,22 +41,27 @@ public class RolesEmpleadoService {
         return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(rolesEmpleado));
     }
 
-    public Optional<RolesEmpleadoDTO> update(Integer id, RolesEmpleadoDTO rolesEmpleadoDTO) {
-        return rolesEmpleadoRepository.findById(id).map(existingRol -> {
-            existingRol.setNombreRol(rolesEmpleadoDTO.getNombreRol());
-            return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(existingRol));
-        });
+    public RolesEmpleadoDTO update(Integer id, RolesEmpleadoDTO rolesEmpleadoDTO) {
+        RolesEmpleado existingRol = rolesEmpleadoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Rol de empleado con id " + id + " no encontrado"));
+        existingRol.setNombreRol(rolesEmpleadoDTO.getNombreRol());
+        return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(existingRol));
     }
 
-    public boolean delete(Integer id) {
-        if (rolesEmpleadoRepository.existsById(id)) {
-            // Verificar si hay empleados asignados a este rol antes de borrar
-            if (empleadoRepository.existsByIdRol_Id(id)) {
-                throw new IllegalStateException("No se puede eliminar el rol porque hay empleados asignados a él.");
-            }
-            rolesEmpleadoRepository.deleteById(id);
-            return true;
+    public List<RolesEmpleadoDTO> filter(String nombreRol) {
+        return rolesEmpleadoRepository.filter(nombreRol)
+                .stream()
+                .map(RolesEmpleadoDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public void delete(Integer id) {
+        if (!rolesEmpleadoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Rol de empleado con id " + id + " no encontrado");
         }
-        return false;
+        if (empleadoRepository.existsByIdRol_Id(id)) {
+            throw new IllegalStateException("No se puede eliminar el rol porque hay empleados asignados a el.");
+        }
+        rolesEmpleadoRepository.deleteById(id);
     }
 }

@@ -1,6 +1,7 @@
 package org.davide.ggbproyect.models.enums;
 
-public enum GeneroJuego {
+public enum
+GeneroJuego {
     ACCION,
     AVENTURA,
     FAMILIAR,

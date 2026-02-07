@@ -3,10 +3,11 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.PagosMesaDTO;
 import org.davide.ggbproyect.service.PagosMesaService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -24,34 +25,37 @@ public class PagosMesaController {
         return ResponseEntity.ok(pagosMesaService.getAll());
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<List<PagosMesaDTO>> filter(
+            @RequestParam(required = false) Integer idSesion,
+            @RequestParam(required = false) String metodoPago,
+            @RequestParam(required = false) String estado) {
+        return ResponseEntity.ok(pagosMesaService.filter(idSesion, metodoPago, estado));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<PagosMesaDTO> getById(@PathVariable Integer id) {
-        return pagosMesaService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(pagosMesaService.getById(id));
     }
 
     @PostMapping
     public ResponseEntity<PagosMesaDTO> create(@Valid @RequestBody PagosMesaDTO pagosMesaDTO) {
-        return new ResponseEntity<>(pagosMesaService.create(pagosMesaDTO), HttpStatus.CREATED);
+        PagosMesaDTO created = pagosMesaService.create(pagosMesaDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PagosMesaDTO> update(@PathVariable Integer id, @Valid @RequestBody PagosMesaDTO pagosMesaDTO) {
-        return pagosMesaService.update(id, pagosMesaDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(pagosMesaService.update(id, pagosMesaDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
-            if (pagosMesaService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        pagosMesaService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,13 +1,13 @@
 package org.davide.ggbproyect.controller;
 
 import jakarta.validation.Valid;
-import org.davide.ggbproyect.models.JuegoDTO;
 import org.davide.ggbproyect.models.LineasComandaDTO;
 import org.davide.ggbproyect.service.LineasComandaService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -25,34 +25,36 @@ public class LineasComandaController {
         return ResponseEntity.ok(lineasComandaService.getAll());
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<List<LineasComandaDTO>> filter(
+            @RequestParam(required = false) Integer idComanda,
+            @RequestParam(required = false) Integer idProducto) {
+        return ResponseEntity.ok(lineasComandaService.filter(idComanda, idProducto));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<LineasComandaDTO> getById(@PathVariable Integer id) {
-        return lineasComandaService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(lineasComandaService.getById(id));
     }
 
     @PostMapping
     public ResponseEntity<LineasComandaDTO> create(@Valid @RequestBody LineasComandaDTO lineasComandaDTO) {
-        return new ResponseEntity<>(lineasComandaService.create(lineasComandaDTO), HttpStatus.CREATED);
+        LineasComandaDTO created = lineasComandaService.create(lineasComandaDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<LineasComandaDTO> update(@PathVariable Integer id, @Valid @RequestBody LineasComandaDTO lineasComandaDTO) {
-        return lineasComandaService.update(id, lineasComandaDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(lineasComandaService.update(id, lineasComandaDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
-            if (lineasComandaService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        lineasComandaService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -18,7 +18,8 @@ import java.util.Objects;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class Juego {
+public class
+Juego {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_juego", nullable = false)

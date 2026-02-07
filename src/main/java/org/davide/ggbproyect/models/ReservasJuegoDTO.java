@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -12,6 +13,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservasJuegoDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @NotNull

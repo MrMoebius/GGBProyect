@@ -3,10 +3,11 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.service.ClienteService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -24,34 +25,37 @@ public class ClienteController {
         return ResponseEntity.ok(clienteService.getAll());
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<List<ClienteDTO>> filter(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String telefono) {
+        return ResponseEntity.ok(clienteService.filter(nombre, email, telefono));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ClienteDTO> getById(@PathVariable Integer id) {
-        return clienteService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(clienteService.getById(id));
     }
 
     @PostMapping
     public ResponseEntity<ClienteDTO> create(@Valid @RequestBody ClienteDTO clienteDTO) {
-        return new ResponseEntity<>(clienteService.create(clienteDTO), HttpStatus.CREATED);
+        ClienteDTO created = clienteService.create(clienteDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ClienteDTO> update(@PathVariable Integer id, @Valid @RequestBody ClienteDTO clienteDTO) {
-        return clienteService.update(id, clienteDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(clienteService.update(id, clienteDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
-            if (clienteService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        clienteService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

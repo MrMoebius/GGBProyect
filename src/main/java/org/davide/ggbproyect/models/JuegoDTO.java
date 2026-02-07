@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import org.davide.ggbproyect.models.enums.UbicacionJuego;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JuegoDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @Size(max = 150)
@@ -66,7 +68,7 @@ public class JuegoDTO {
             try {
                 entity.setComplejidad(ComplejidadJuego.valueOf(this.complejidad));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum value or leave null
+                throw new IllegalArgumentException("Valor de complejidad invalido: " + this.complejidad);
             }
         }
         entity.setGenero(this.genero);
@@ -74,7 +76,7 @@ public class JuegoDTO {
             try {
                 entity.setIdioma(IdiomaJuego.valueOf(this.idioma));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum value
+                throw new IllegalArgumentException("Valor de idioma invalido: " + this.idioma);
             }
         }
         entity.setDescripcion(this.descripcion);
@@ -82,7 +84,7 @@ public class JuegoDTO {
             try {
                 entity.setUbicacion(UbicacionJuego.valueOf(this.ubicacion));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum value
+                throw new IllegalArgumentException("Valor de ubicacion invalido: " + this.ubicacion);
             }
         }
         entity.setRecomendadoDosJugadores(this.recomendadoDosJugadores);

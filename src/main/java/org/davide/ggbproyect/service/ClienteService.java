@@ -4,19 +4,22 @@ import lombok.RequiredArgsConstructor;
 import org.davide.ggbproyect.models.Cliente;
 import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.repository.ClienteRepository;
-import org.davide.ggbproyect.repository.EmpleadoRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
-    private final EmpleadoRepository empleadoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<ClienteDTO> getAll() {
         return clienteRepository.findAll().stream()
@@ -24,33 +27,45 @@ public class ClienteService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<ClienteDTO> getById(Integer id) {
+    public ClienteDTO getById(Integer id) {
         return clienteRepository.findById(id)
-                .map(ClienteDTO::new);
+                .map(ClienteDTO::new)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente con id " + id + " no encontrado"));
     }
 
     public ClienteDTO create(ClienteDTO clienteDTO) {
         Cliente cliente = clienteDTO.toEntity();
+        if (clienteDTO.getPassword() != null) {
+            cliente.setPassword(passwordEncoder.encode(clienteDTO.getPassword()));
+        }
         return new ClienteDTO(clienteRepository.save(cliente));
     }
 
-    public Optional<ClienteDTO> update(Integer id, ClienteDTO clienteDTO) {
-        return clienteRepository.findById(id).map(existingCliente -> {
-            existingCliente.setNombre(clienteDTO.getNombre());
-            existingCliente.setEmail(clienteDTO.getEmail());
-            existingCliente.setTelefono(clienteDTO.getTelefono());
-            existingCliente.setFechaAlta(clienteDTO.getFechaAlta());
-            existingCliente.setNotas(clienteDTO.getNotas());
-            // No actualizamos la contraseña
-            return new ClienteDTO(clienteRepository.save(existingCliente));
-        });
+    public ClienteDTO update(Integer id, ClienteDTO clienteDTO) {
+        Cliente existingCliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente con id " + id + " no encontrado"));
+        existingCliente.setNombre(clienteDTO.getNombre());
+        existingCliente.setEmail(clienteDTO.getEmail());
+        existingCliente.setTelefono(clienteDTO.getTelefono());
+        existingCliente.setFechaAlta(clienteDTO.getFechaAlta());
+        existingCliente.setNotas(clienteDTO.getNotas());
+        if (clienteDTO.getPassword() != null && !clienteDTO.getPassword().isBlank()) {
+            existingCliente.setPassword(passwordEncoder.encode(clienteDTO.getPassword()));
+        }
+        return new ClienteDTO(clienteRepository.save(existingCliente));
     }
 
-    public boolean delete(Integer id) {
-        if (clienteRepository.existsById(id)) {
-            clienteRepository.deleteById(id);
-            return true;
+    public List<ClienteDTO> filter(String nombre, String email, String telefono) {
+        return clienteRepository.filter(nombre, email, telefono)
+                .stream()
+                .map(ClienteDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public void delete(Integer id) {
+        if (!clienteRepository.existsById(id)) {
+            throw new EntityNotFoundException("Cliente con id " + id + " no encontrado");
         }
-        return false;
+        clienteRepository.deleteById(id);
     }
 }
