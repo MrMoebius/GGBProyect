@@ -36,6 +36,8 @@ public class JuegoDTO {
 
     private String descripcion;
 
+    private String observaciones;
+
     private String ubicacion;
 
     private Boolean recomendadoDosJugadores;
@@ -52,6 +54,7 @@ public class JuegoDTO {
         this.genero = entity.getGenero();
         this.idioma = entity.getIdioma() != null ? entity.getIdioma().name() : null;
         this.descripcion = entity.getDescripcion();
+        this.observaciones = entity.getObservaciones();
         this.ubicacion = entity.getUbicacion() != null ? entity.getUbicacion().name() : null;
         this.recomendadoDosJugadores = entity.getRecomendadoDosJugadores();
         this.activo = entity.getActivo();
@@ -80,6 +83,7 @@ public class JuegoDTO {
             }
         }
         entity.setDescripcion(this.descripcion);
+        entity.setObservaciones(this.observaciones);
         if (this.ubicacion != null) {
             try {
                 entity.setUbicacion(UbicacionJuego.valueOf(this.ubicacion));
