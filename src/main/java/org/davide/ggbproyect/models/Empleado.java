@@ -12,7 +12,9 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
-@Table(name = "empleados")
+@Table(name = "empleados", indexes = {
+    @Index(name = "idx_empleado_rol", columnList = "id_rol")
+})
 @Getter
 @Setter
 @ToString
@@ -22,6 +24,10 @@ public class Empleado {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_empleado", nullable = false)
     private Integer id;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @Size(max = 100)
     @NotNull

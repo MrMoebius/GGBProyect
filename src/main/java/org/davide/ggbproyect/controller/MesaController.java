@@ -31,13 +31,14 @@ public class MesaController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
-    public ResponseEntity<List<MesaDTO>> filter(
+    public ResponseEntity<Page<MesaDTO>> filter(
             @RequestParam(required = false) String nombreMesa,
             @RequestParam(required = false) String zona,
             @RequestParam(required = false) String ubicacion,
             @RequestParam(required = false) String estado,
-            @RequestParam(required = false) Integer capacidad) {
-        return ResponseEntity.ok(mesaService.filter(nombreMesa, zona, ubicacion, estado, capacidad));
+            @RequestParam(required = false) Integer capacidad,
+            Pageable pageable) {
+        return ResponseEntity.ok(mesaService.filter(nombreMesa, zona, ubicacion, estado, capacidad, pageable));
     }
 
     @GetMapping("/{id}")

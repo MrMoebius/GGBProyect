@@ -20,6 +20,10 @@ public class RolesEmpleado {
     @Column(name = "id_rol", nullable = false)
     private Integer id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Size(max = 50)
     @NotNull
     @Column(name = "nombre_rol", nullable = false, length = 50)

@@ -65,12 +65,10 @@ public class MesaService {
         return new MesaDTO(mesaRepository.save(existingMesa));
     }
 
-    public List<MesaDTO> filter(String nombreMesa, String zona, String ubicacion,
-                                String estado, Integer capacidad) {
-        return mesaRepository.filter(nombreMesa, zona, ubicacion, estado, capacidad)
-                .stream()
-                .map(MesaDTO::new)
-                .collect(Collectors.toList());
+    public Page<MesaDTO> filter(String nombreMesa, String zona, String ubicacion,
+                                String estado, Integer capacidad, Pageable pageable) {
+        return mesaRepository.filter(nombreMesa, zona, ubicacion, estado, capacidad, pageable)
+                .map(MesaDTO::new);
     }
 
     public void delete(Integer id) {

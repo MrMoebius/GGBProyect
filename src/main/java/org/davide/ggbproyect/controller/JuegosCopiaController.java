@@ -31,10 +31,11 @@ public class JuegosCopiaController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    public ResponseEntity<List<JuegosCopiaDTO>> filter(
+    public ResponseEntity<Page<JuegosCopiaDTO>> filter(
             @RequestParam(required = false) Integer idJuego,
-            @RequestParam(required = false) String estado) {
-        return ResponseEntity.ok(juegosCopiaService.filter(idJuego, estado));
+            @RequestParam(required = false) String estado,
+            Pageable pageable) {
+        return ResponseEntity.ok(juegosCopiaService.filter(idJuego, estado, pageable));
     }
 
     @GetMapping("/{id}")

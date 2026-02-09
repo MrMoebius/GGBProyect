@@ -31,12 +31,13 @@ public class ReservasMesaController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    public ResponseEntity<List<ReservasMesaDTO>> filter(
+    public ResponseEntity<Page<ReservasMesaDTO>> filter(
             @RequestParam(required = false) Integer idCliente,
             @RequestParam(required = false) Integer idMesa,
             @RequestParam(required = false) Integer idJuegoDeseado,
-            @RequestParam(required = false) String estado) {
-        return ResponseEntity.ok(reservasMesaService.filter(idCliente, idMesa, idJuegoDeseado, estado));
+            @RequestParam(required = false) String estado,
+            Pageable pageable) {
+        return ResponseEntity.ok(reservasMesaService.filter(idCliente, idMesa, idJuegoDeseado, estado, pageable));
     }
 
     @GetMapping("/{id}")

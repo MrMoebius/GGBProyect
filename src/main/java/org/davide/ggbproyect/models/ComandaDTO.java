@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoComanda;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -24,6 +25,7 @@ public class ComandaDTO {
     private Instant fechaHora;
 
     @Size(max = 20)
+    @ValidEnum(enumClass = EstadoComanda.class, message = "Valor de estado invalido")
     private String estado;
 
     private BigDecimal total;

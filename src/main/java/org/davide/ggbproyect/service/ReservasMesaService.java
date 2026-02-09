@@ -108,12 +108,10 @@ public class ReservasMesaService {
         return new ReservasMesaDTO(reservasMesaRepository.save(existingReserva));
     }
 
-    public List<ReservasMesaDTO> filter(Integer idCliente, Integer idMesa,
-                                        Integer idJuegoDeseado, String estado) {
-        return reservasMesaRepository.filter(idCliente, idMesa, idJuegoDeseado, estado)
-                .stream()
-                .map(ReservasMesaDTO::new)
-                .collect(Collectors.toList());
+    public Page<ReservasMesaDTO> filter(Integer idCliente, Integer idMesa,
+                                        Integer idJuegoDeseado, String estado, Pageable pageable) {
+        return reservasMesaRepository.filter(idCliente, idMesa, idJuegoDeseado, estado, pageable)
+                .map(ReservasMesaDTO::new);
     }
 
     public void delete(Integer id) {

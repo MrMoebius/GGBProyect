@@ -39,9 +39,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginDto loginDto,
                                                       HttpServletRequest request) {
-        String key = loginDto.getEmail();
+        String ip = request.getRemoteAddr();
+        String key = loginDto.getEmail() + ":" + ip;
 
-        if (loginRateLimiter.isBlocked(key)) {
+        if (loginRateLimiter.isBlocked(key) || loginRateLimiter.isBlocked(ip)) {
             Map<String, Object> error = new HashMap<>();
             error.put("message", "Demasiados intentos fallidos. Cuenta bloqueada temporalmente.");
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
@@ -53,6 +54,7 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             loginRateLimiter.registerSuccessfulLogin(key);
+            loginRateLimiter.registerSuccessfulLogin(ip);
 
             String token = jwtTokenProvider.generateToken(authentication);
 
@@ -70,6 +72,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
             loginRateLimiter.registerFailedAttempt(key);
+            loginRateLimiter.registerFailedAttempt(ip);
             throw e;
         }
     }

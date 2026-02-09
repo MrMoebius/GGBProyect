@@ -30,12 +30,13 @@ public class SesionesMesaController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<SesionesMesaDTO>> filter(
+    public ResponseEntity<Page<SesionesMesaDTO>> filter(
             @RequestParam(required = false) Integer idMesa,
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) Integer idReserva,
-            @RequestParam(required = false) Integer idEmpleadoApertura) {
-        return ResponseEntity.ok(sesionesMesaService.filter(idMesa, estado, idReserva, idEmpleadoApertura));
+            @RequestParam(required = false) Integer idEmpleadoApertura,
+            Pageable pageable) {
+        return ResponseEntity.ok(sesionesMesaService.filter(idMesa, estado, idReserva, idEmpleadoApertura, pageable));
     }
 
     @GetMapping("/{id}")

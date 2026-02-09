@@ -31,11 +31,12 @@ public class ProductoController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
-    public ResponseEntity<List<ProductoDTO>> filter(
+    public ResponseEntity<Page<ProductoDTO>> filter(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) Boolean activo) {
-        return ResponseEntity.ok(productoService.filter(nombre, categoria, activo));
+            @RequestParam(required = false) Boolean activo,
+            Pageable pageable) {
+        return ResponseEntity.ok(productoService.filter(nombre, categoria, activo, pageable));
     }
 
     @GetMapping("/{id}")

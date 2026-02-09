@@ -51,11 +51,9 @@ public class TarifasLudotecaService {
         return new TarifasLudotecaDTO(tarifasLudotecaRepository.save(existingTarifa));
     }
 
-    public List<TarifasLudotecaDTO> filter(String nombreTramo, Boolean activo) {
-        return tarifasLudotecaRepository.filter(nombreTramo, activo)
-                .stream()
-                .map(TarifasLudotecaDTO::new)
-                .collect(Collectors.toList());
+    public Page<TarifasLudotecaDTO> filter(String nombreTramo, Boolean activo, Pageable pageable) {
+        return tarifasLudotecaRepository.filter(nombreTramo, activo, pageable)
+                .map(TarifasLudotecaDTO::new);
     }
 
     public void delete(Integer id) {

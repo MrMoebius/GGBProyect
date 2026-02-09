@@ -24,6 +24,8 @@ public class ClienteDTO {
     @Size(max = 150)
     private String nombre;
 
+    @NotNull
+    @NotBlank
     @Email
     @Size(max = 150)
     private String email;
@@ -32,6 +34,7 @@ public class ClienteDTO {
     private String telefono;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Size(min = 6, max = 100)
     private String password;
 
     private LocalDate fechaAlta;

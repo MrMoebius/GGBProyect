@@ -30,10 +30,11 @@ public class ComandaController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<ComandaDTO>> filter(
+    public ResponseEntity<Page<ComandaDTO>> filter(
             @RequestParam(required = false) Integer idSesion,
-            @RequestParam(required = false) String estado) {
-        return ResponseEntity.ok(comandaService.filter(idSesion, estado));
+            @RequestParam(required = false) String estado,
+            Pageable pageable) {
+        return ResponseEntity.ok(comandaService.filter(idSesion, estado, pageable));
     }
 
     @GetMapping("/{id}")

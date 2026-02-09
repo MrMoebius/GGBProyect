@@ -78,11 +78,9 @@ public class ReservasJuegoService {
         return new ReservasJuegoDTO(reservasJuegoRepository.save(existingReserva));
     }
 
-    public List<ReservasJuegoDTO> filter(Integer idSesion, Integer idCopia, String estado) {
-        return reservasJuegoRepository.filter(idSesion, idCopia, estado)
-                .stream()
-                .map(ReservasJuegoDTO::new)
-                .collect(Collectors.toList());
+    public Page<ReservasJuegoDTO> filter(Integer idSesion, Integer idCopia, String estado, Pageable pageable) {
+        return reservasJuegoRepository.filter(idSesion, idCopia, estado, pageable)
+                .map(ReservasJuegoDTO::new);
     }
 
     public void delete(Integer id) {

@@ -30,10 +30,11 @@ public class LineasComandaController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<LineasComandaDTO>> filter(
+    public ResponseEntity<Page<LineasComandaDTO>> filter(
             @RequestParam(required = false) Integer idComanda,
-            @RequestParam(required = false) Integer idProducto) {
-        return ResponseEntity.ok(lineasComandaService.filter(idComanda, idProducto));
+            @RequestParam(required = false) Integer idProducto,
+            Pageable pageable) {
+        return ResponseEntity.ok(lineasComandaService.filter(idComanda, idProducto, pageable));
     }
 
     @GetMapping("/{id}")

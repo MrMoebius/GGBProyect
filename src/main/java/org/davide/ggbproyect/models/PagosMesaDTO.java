@@ -2,12 +2,14 @@ package org.davide.ggbproyect.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoPago;
 import org.davide.ggbproyect.models.enums.MetodoPago;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -28,12 +30,15 @@ public class PagosMesaDTO
     private Instant fechaHora;
 
     @NotNull
+    @Positive
     private BigDecimal importe;
 
     @Size(max = 50)
+    @ValidEnum(enumClass = MetodoPago.class, message = "Valor de metodo de pago invalido")
     private String metodoPago;
 
     @Size(max = 30)
+    @ValidEnum(enumClass = EstadoPago.class, message = "Valor de estado invalido")
     private String estado;
 
     public PagosMesaDTO(PagosMesa entity) {

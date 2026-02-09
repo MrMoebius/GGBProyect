@@ -50,11 +50,9 @@ public class ProductoService {
         return new ProductoDTO(productoRepository.save(existingProducto));
     }
 
-    public List<ProductoDTO> filter(String nombre, String categoria, Boolean activo) {
-        return productoRepository.filter(nombre, categoria, activo)
-                .stream()
-                .map(ProductoDTO::new)
-                .collect(Collectors.toList());
+    public Page<ProductoDTO> filter(String nombre, String categoria, Boolean activo, Pageable pageable) {
+        return productoRepository.filter(nombre, categoria, activo, pageable)
+                .map(ProductoDTO::new);
     }
 
     public void delete(Integer id) {

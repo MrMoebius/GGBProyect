@@ -1,6 +1,7 @@
 package org.davide.ggbproyect.controller;
 
 import jakarta.validation.Valid;
+import org.davide.ggbproyect.models.ChangePasswordDTO;
 import org.davide.ggbproyect.models.EmpleadoDTO;
 import org.davide.ggbproyect.service.EmpleadoService;
 import org.springframework.data.domain.Page;
@@ -30,12 +31,13 @@ public class EmpleadoController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<EmpleadoDTO>> filter(
+    public ResponseEntity<Page<EmpleadoDTO>> filter(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) Integer idRol,
-            @RequestParam(required = false) String estado) {
-        return ResponseEntity.ok(empleadoService.filter(nombre, email, idRol, estado));
+            @RequestParam(required = false) String estado,
+            Pageable pageable) {
+        return ResponseEntity.ok(empleadoService.filter(nombre, email, idRol, estado, pageable));
     }
 
     @GetMapping("/{id}")
@@ -56,6 +58,13 @@ public class EmpleadoController {
     @PutMapping("/{id}")
     public ResponseEntity<EmpleadoDTO> update(@PathVariable Integer id, @Valid @RequestBody EmpleadoDTO empleadoDTO) {
         return ResponseEntity.ok(empleadoService.update(id, empleadoDTO));
+    }
+
+    @PutMapping("/{id}/password")
+    public ResponseEntity<Void> changePassword(@PathVariable Integer id,
+                                                @Valid @RequestBody ChangePasswordDTO dto) {
+        empleadoService.changePassword(id, dto.getCurrentPassword(), dto.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

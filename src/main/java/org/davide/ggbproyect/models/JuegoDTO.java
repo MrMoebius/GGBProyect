@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.ComplejidadJuego;
 import org.davide.ggbproyect.models.enums.IdiomaJuego;
 import org.davide.ggbproyect.models.enums.UbicacionJuego;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 @Data
 @NoArgsConstructor
@@ -29,17 +30,20 @@ public class JuegoDTO {
 
     private Integer duracionMediaMin;
 
+    @ValidEnum(enumClass = ComplejidadJuego.class, message = "Valor de complejidad invalido")
     private String complejidad;
 
     @Size(max = 255)
     private String genero;
 
+    @ValidEnum(enumClass = IdiomaJuego.class, message = "Valor de idioma invalido")
     private String idioma;
 
     private String descripcion;
 
     private String observaciones;
 
+    @ValidEnum(enumClass = UbicacionJuego.class, message = "Valor de ubicacion invalido")
     private String ubicacion;
 
     private Boolean recomendadoDosJugadores;

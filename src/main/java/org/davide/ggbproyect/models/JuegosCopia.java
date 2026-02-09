@@ -11,7 +11,9 @@ import org.hibernate.proxy.HibernateProxy;
 import java.util.Objects;
 
 @Entity
-@Table(name = "juegos_copias")
+@Table(name = "juegos_copias", indexes = {
+    @Index(name = "idx_copia_juego", columnList = "id_juego")
+})
 @Getter
 @Setter
 @ToString
@@ -21,6 +23,10 @@ public class JuegosCopia {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_copia", nullable = false)
     private Integer id;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -70,11 +70,9 @@ public class ComandaService {
         return new ComandaDTO(comandaRepository.save(existingComanda));
     }
 
-    public List<ComandaDTO> filter(Integer idSesion, String estado) {
-        return comandaRepository.filter(idSesion, estado)
-                .stream()
-                .map(ComandaDTO::new)
-                .collect(Collectors.toList());
+    public Page<ComandaDTO> filter(Integer idSesion, String estado, Pageable pageable) {
+        return comandaRepository.filter(idSesion, estado, pageable)
+                .map(ComandaDTO::new);
     }
 
     public void delete(Integer id) {

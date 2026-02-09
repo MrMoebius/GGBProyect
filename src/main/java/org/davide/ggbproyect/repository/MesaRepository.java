@@ -1,6 +1,8 @@
 package org.davide.ggbproyect.repository;
 
 import org.davide.ggbproyect.models.Mesa;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,9 +19,10 @@ public interface MesaRepository extends JpaRepository<Mesa, Integer> {
            "(:ubicacion IS NULL OR str(e.ubicacion) = :ubicacion) AND " +
            "(:estado IS NULL OR str(e.estado) = :estado) AND " +
            "(:capacidad IS NULL OR e.capacidad = :capacidad)")
-    List<Mesa> filter(@Param("nombreMesa") String nombreMesa,
+    Page<Mesa> filter(@Param("nombreMesa") String nombreMesa,
                       @Param("zona") String zona,
                       @Param("ubicacion") String ubicacion,
                       @Param("estado") String estado,
-                      @Param("capacidad") Integer capacidad);
+                      @Param("capacidad") Integer capacidad,
+                      Pageable pageable);
 }

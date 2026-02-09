@@ -13,7 +13,9 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@Table(name = "peticiones_pago")
+@Table(name = "peticiones_pago", indexes = {
+    @Index(name = "idx_peticion_sesion", columnList = "id_sesion")
+})
 @Getter
 @Setter
 @ToString
@@ -23,6 +25,10 @@ public class PeticionesPago {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_peticion", nullable = false)
     private Integer id;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
