@@ -1,6 +1,7 @@
 package org.davide.ggbproyect.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -18,12 +19,14 @@ public class ProductoDTO {
 
     @Size(max = 150)
     @NotNull
+    @NotBlank
     private String nombre;
 
     private String descripcion;
 
     @Size(max = 50)
     @NotNull
+    @NotBlank
     private String categoria;
 
     @NotNull

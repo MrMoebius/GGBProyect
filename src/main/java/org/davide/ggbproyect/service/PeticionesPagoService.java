@@ -5,6 +5,9 @@ import org.davide.ggbproyect.models.PeticionesPagoDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.models.enums.MetodoPago;
 import org.davide.ggbproyect.repository.PeticionesPagoRepository;
+import org.davide.ggbproyect.repository.SesionesMesaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +21,17 @@ import java.util.stream.Collectors;
 public class PeticionesPagoService {
 
     private final PeticionesPagoRepository peticionesPagoRepository;
+    private final SesionesMesaRepository sesionesMesaRepository;
 
-    public PeticionesPagoService(PeticionesPagoRepository peticionesPagoRepository) {
+    public PeticionesPagoService(PeticionesPagoRepository peticionesPagoRepository,
+                                 SesionesMesaRepository sesionesMesaRepository) {
         this.peticionesPagoRepository = peticionesPagoRepository;
+        this.sesionesMesaRepository = sesionesMesaRepository;
     }
 
-    public List<PeticionesPagoDTO> getAll() {
-        return peticionesPagoRepository.findAll().stream()
-                .map(PeticionesPagoDTO::new)
-                .collect(Collectors.toList());
+    public Page<PeticionesPagoDTO> getAll(Pageable pageable) {
+        return peticionesPagoRepository.findAll(pageable)
+                .map(PeticionesPagoDTO::new);
     }
 
     public PeticionesPagoDTO getById(Integer id) {
@@ -37,6 +42,11 @@ public class PeticionesPagoService {
 
     public PeticionesPagoDTO create(PeticionesPagoDTO peticionesPagoDTO) {
         PeticionesPago peticionesPago = peticionesPagoDTO.toEntity();
+        if (peticionesPagoDTO.getIdSesion() != null) {
+            SesionesMesa sesion = sesionesMesaRepository.findById(peticionesPagoDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + peticionesPagoDTO.getIdSesion() + " no encontrada"));
+            peticionesPago.setIdSesion(sesion);
+        }
         return new PeticionesPagoDTO(peticionesPagoRepository.save(peticionesPago));
     }
 
@@ -44,8 +54,8 @@ public class PeticionesPagoService {
         PeticionesPago existingPeticion = peticionesPagoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Peticion de pago con id " + id + " no encontrada"));
         if (peticionesPagoDTO.getIdSesion() != null) {
-            SesionesMesa sesion = new SesionesMesa();
-            sesion.setId(peticionesPagoDTO.getIdSesion());
+            SesionesMesa sesion = sesionesMesaRepository.findById(peticionesPagoDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + peticionesPagoDTO.getIdSesion() + " no encontrada"));
             existingPeticion.setIdSesion(sesion);
         }
         if (peticionesPagoDTO.getMetodoPreferido() != null) {

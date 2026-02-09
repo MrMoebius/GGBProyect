@@ -5,6 +5,9 @@ import org.davide.ggbproyect.models.EmpleadoDTO;
 import org.davide.ggbproyect.models.RolesEmpleado;
 import org.davide.ggbproyect.models.enums.EstadoEmpleado;
 import org.davide.ggbproyect.repository.EmpleadoRepository;
+import org.davide.ggbproyect.repository.RolesEmpleadoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,18 +22,20 @@ import java.util.stream.Collectors;
 public class EmpleadoService {
 
     private final EmpleadoRepository empleadoRepository;
+    private final RolesEmpleadoRepository rolesEmpleadoRepository;
     private final PasswordEncoder passwordEncoder;
 
     public EmpleadoService(EmpleadoRepository empleadoRepository,
+                           RolesEmpleadoRepository rolesEmpleadoRepository,
                            PasswordEncoder passwordEncoder) {
         this.empleadoRepository = empleadoRepository;
+        this.rolesEmpleadoRepository = rolesEmpleadoRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<EmpleadoDTO> getAll() {
-        return empleadoRepository.findAll().stream()
-                .map(EmpleadoDTO::new)
-                .collect(Collectors.toList());
+    public Page<EmpleadoDTO> getAll(Pageable pageable) {
+        return empleadoRepository.findAll(pageable)
+                .map(EmpleadoDTO::new);
     }
 
     public EmpleadoDTO getById(Integer id) {
@@ -41,6 +46,11 @@ public class EmpleadoService {
 
     public EmpleadoDTO create(EmpleadoDTO empleadoDTO) {
         Empleado empleado = empleadoDTO.toEntity();
+        if (empleadoDTO.getIdRol() != null) {
+            RolesEmpleado rol = rolesEmpleadoRepository.findById(empleadoDTO.getIdRol())
+                    .orElseThrow(() -> new EntityNotFoundException("Rol con id " + empleadoDTO.getIdRol() + " no encontrado"));
+            empleado.setIdRol(rol);
+        }
         if (empleadoDTO.getPassword() != null) {
             empleado.setPassword(passwordEncoder.encode(empleadoDTO.getPassword()));
         }
@@ -54,8 +64,8 @@ public class EmpleadoService {
         existingEmpleado.setEmail(empleadoDTO.getEmail());
         existingEmpleado.setTelefono(empleadoDTO.getTelefono());
         if (empleadoDTO.getIdRol() != null) {
-            RolesEmpleado rol = new RolesEmpleado();
-            rol.setId(empleadoDTO.getIdRol());
+            RolesEmpleado rol = rolesEmpleadoRepository.findById(empleadoDTO.getIdRol())
+                    .orElseThrow(() -> new EntityNotFoundException("Rol con id " + empleadoDTO.getIdRol() + " no encontrado"));
             existingEmpleado.setIdRol(rol);
         }
         existingEmpleado.setFechaIngreso(empleadoDTO.getFechaIngreso());

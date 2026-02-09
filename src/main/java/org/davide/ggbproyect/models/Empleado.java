@@ -30,7 +30,7 @@ public class Empleado {
 
     @Size(max = 150)
     @NotNull
-    @Column(name = "email", nullable = false, length = 150)
+    @Column(name = "email", nullable = false, length = 150, unique = true)
     private String email;
 
     @Size(max = 20)

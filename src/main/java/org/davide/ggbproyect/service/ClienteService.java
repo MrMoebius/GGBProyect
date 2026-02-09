@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.davide.ggbproyect.models.Cliente;
 import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.repository.ClienteRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +23,9 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public List<ClienteDTO> getAll() {
-        return clienteRepository.findAll().stream()
-                .map(ClienteDTO::new)
-                .collect(Collectors.toList());
+    public Page<ClienteDTO> getAll(Pageable pageable) {
+        return clienteRepository.findAll(pageable)
+                .map(ClienteDTO::new);
     }
 
     public ClienteDTO getById(Integer id) {

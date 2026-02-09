@@ -5,6 +5,8 @@ import org.davide.ggbproyect.models.MesaDTO;
 import org.davide.ggbproyect.models.enums.EstadoMesa;
 import org.davide.ggbproyect.models.enums.UbicacionJuego;
 import org.davide.ggbproyect.repository.MesaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +25,9 @@ public class MesaService {
         this.mesaRepository = mesaRepository;
     }
 
-    public List<MesaDTO> getAll() {
-        return mesaRepository.findAll().stream()
-                .map(MesaDTO::new)
-                .collect(Collectors.toList());
+    public Page<MesaDTO> getAll(Pageable pageable) {
+        return mesaRepository.findAll(pageable)
+                .map(MesaDTO::new);
     }
 
     public MesaDTO getById(Integer id) {

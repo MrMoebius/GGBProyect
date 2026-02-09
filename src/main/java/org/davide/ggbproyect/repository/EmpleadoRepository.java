@@ -11,7 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface EmpleadoRepository extends JpaRepository<Empleado, Integer> {
-    Optional<Empleado> findByEmail(String email);
+    @Query("SELECT e FROM Empleado e JOIN FETCH e.idRol WHERE e.email = :email")
+    Optional<Empleado> findByEmail(@Param("email") String email);
     boolean existsByIdRol_Id(Integer idRol);
 
     @Query("SELECT e FROM Empleado e WHERE " +

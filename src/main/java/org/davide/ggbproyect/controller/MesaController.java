@@ -3,7 +3,10 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.MesaDTO;
 import org.davide.ggbproyect.service.MesaService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,11 +24,13 @@ public class MesaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MesaDTO>> getAll() {
-        return ResponseEntity.ok(mesaService.getAll());
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
+    public ResponseEntity<Page<MesaDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(mesaService.getAll(pageable));
     }
 
     @GetMapping("/filter")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<List<MesaDTO>> filter(
             @RequestParam(required = false) String nombreMesa,
             @RequestParam(required = false) String zona,
@@ -36,11 +41,13 @@ public class MesaController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<MesaDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(mesaService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MesaDTO> create(@Valid @RequestBody MesaDTO mesaDTO) {
         MesaDTO created = mesaService.create(mesaDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -51,11 +58,13 @@ public class MesaController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MesaDTO> update(@PathVariable Integer id, @Valid @RequestBody MesaDTO mesaDTO) {
         return ResponseEntity.ok(mesaService.update(id, mesaDTO));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         mesaService.delete(id);
         return ResponseEntity.noContent().build();

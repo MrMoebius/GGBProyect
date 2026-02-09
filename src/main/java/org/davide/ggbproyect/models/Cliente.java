@@ -27,7 +27,8 @@ public class Cliente {
     private String nombre;
 
     @Size(max = 150)
-    @Column(name = "email", length = 150)
+    @NotNull
+    @Column(name = "email", length = 150, unique = true, nullable = false)
     private String email;
 
     @Size(max = 20)

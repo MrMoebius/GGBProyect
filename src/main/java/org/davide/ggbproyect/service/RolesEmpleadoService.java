@@ -4,6 +4,8 @@ import org.davide.ggbproyect.models.RolesEmpleado;
 import org.davide.ggbproyect.models.RolesEmpleadoDTO;
 import org.davide.ggbproyect.repository.EmpleadoRepository;
 import org.davide.ggbproyect.repository.RolesEmpleadoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +26,9 @@ public class RolesEmpleadoService {
         this.empleadoRepository = empleadoRepository;
     }
 
-    public List<RolesEmpleadoDTO> getAll() {
-        return rolesEmpleadoRepository.findAll().stream()
-                .map(RolesEmpleadoDTO::new)
-                .collect(Collectors.toList());
+    public Page<RolesEmpleadoDTO> getAll(Pageable pageable) {
+        return rolesEmpleadoRepository.findAll(pageable)
+                .map(RolesEmpleadoDTO::new);
     }
 
     public RolesEmpleadoDTO getById(Integer id) {

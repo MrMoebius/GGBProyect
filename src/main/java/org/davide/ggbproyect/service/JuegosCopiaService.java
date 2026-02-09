@@ -4,7 +4,10 @@ import org.davide.ggbproyect.models.Juego;
 import org.davide.ggbproyect.models.JuegosCopia;
 import org.davide.ggbproyect.models.JuegosCopiaDTO;
 import org.davide.ggbproyect.models.enums.EstadoCopiaJuego;
+import org.davide.ggbproyect.repository.JuegoRepository;
 import org.davide.ggbproyect.repository.JuegosCopiaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +21,17 @@ import java.util.stream.Collectors;
 public class JuegosCopiaService {
 
     private final JuegosCopiaRepository juegosCopiaRepository;
+    private final JuegoRepository juegoRepository;
 
-    public JuegosCopiaService(JuegosCopiaRepository juegosCopiaRepository) {
+    public JuegosCopiaService(JuegosCopiaRepository juegosCopiaRepository,
+                              JuegoRepository juegoRepository) {
         this.juegosCopiaRepository = juegosCopiaRepository;
+        this.juegoRepository = juegoRepository;
     }
 
-    public List<JuegosCopiaDTO> getAll() {
-        return juegosCopiaRepository.findAll().stream()
-                .map(JuegosCopiaDTO::new)
-                .collect(Collectors.toList());
+    public Page<JuegosCopiaDTO> getAll(Pageable pageable) {
+        return juegosCopiaRepository.findAll(pageable)
+                .map(JuegosCopiaDTO::new);
     }
 
     public JuegosCopiaDTO getById(Integer id) {
@@ -37,6 +42,11 @@ public class JuegosCopiaService {
 
     public JuegosCopiaDTO create(JuegosCopiaDTO juegosCopiaDTO) {
         JuegosCopia juegosCopia = juegosCopiaDTO.toEntity();
+        if (juegosCopiaDTO.getIdJuego() != null) {
+            Juego juego = juegoRepository.findById(juegosCopiaDTO.getIdJuego())
+                    .orElseThrow(() -> new EntityNotFoundException("Juego con id " + juegosCopiaDTO.getIdJuego() + " no encontrado"));
+            juegosCopia.setIdJuego(juego);
+        }
         return new JuegosCopiaDTO(juegosCopiaRepository.save(juegosCopia));
     }
 
@@ -44,8 +54,8 @@ public class JuegosCopiaService {
         JuegosCopia existingCopia = juegosCopiaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Copia de juego con id " + id + " no encontrada"));
         if (juegosCopiaDTO.getIdJuego() != null) {
-            Juego juego = new Juego();
-            juego.setId(juegosCopiaDTO.getIdJuego());
+            Juego juego = juegoRepository.findById(juegosCopiaDTO.getIdJuego())
+                    .orElseThrow(() -> new EntityNotFoundException("Juego con id " + juegosCopiaDTO.getIdJuego() + " no encontrado"));
             existingCopia.setIdJuego(juego);
         }
         existingCopia.setCodigoInterno(juegosCopiaDTO.getCodigoInterno());

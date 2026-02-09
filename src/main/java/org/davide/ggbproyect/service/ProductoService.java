@@ -3,6 +3,8 @@ package org.davide.ggbproyect.service;
 import org.davide.ggbproyect.models.Producto;
 import org.davide.ggbproyect.models.ProductoDTO;
 import org.davide.ggbproyect.repository.ProductoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +23,9 @@ public class ProductoService {
         this.productoRepository = productoRepository;
     }
 
-    public List<ProductoDTO> getAll() {
-        return productoRepository.findAll().stream()
-                .map(ProductoDTO::new)
-                .collect(Collectors.toList());
+    public Page<ProductoDTO> getAll(Pageable pageable) {
+        return productoRepository.findAll(pageable)
+                .map(ProductoDTO::new);
     }
 
     public ProductoDTO getById(Integer id) {

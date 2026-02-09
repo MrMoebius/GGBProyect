@@ -1,10 +1,14 @@
 package org.davide.ggbproyect.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.LoginDto;
 import org.davide.ggbproyect.security.JwtTokenProvider;
+import org.davide.ggbproyect.security.LoginRateLimiter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,33 +26,51 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LoginRateLimiter loginRateLimiter;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider) {
+    public AuthController(AuthenticationManager authenticationManager,
+                          JwtTokenProvider jwtTokenProvider,
+                          LoginRateLimiter loginRateLimiter) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginDto loginDto) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.getEmail(), loginDto.getPassword()));
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginDto loginDto,
+                                                      HttpServletRequest request) {
+        String key = loginDto.getEmail();
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (loginRateLimiter.isBlocked(key)) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Demasiados intentos fallidos. Cuenta bloqueada temporalmente.");
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
+        }
 
-        String token = jwtTokenProvider.generateToken(authentication);
-        
-        // Extract role from authentication
-        String role = authentication.getAuthorities().stream()
-                .findFirst()
-                .map(item -> item.getAuthority())
-                .orElse("ROLE_CLIENTE"); // Default fallback
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("accessToken", token);
-        response.put("tokenType", "Bearer");
-        response.put("role", role);
-        response.put("email", authentication.getName()); // Add email to response
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            loginRateLimiter.registerSuccessfulLogin(key);
 
-        return ResponseEntity.ok(response);
+            String token = jwtTokenProvider.generateToken(authentication);
+
+            String role = authentication.getAuthorities().stream()
+                    .findFirst()
+                    .map(item -> item.getAuthority())
+                    .orElse("ROLE_CLIENTE");
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("accessToken", token);
+            response.put("tokenType", "Bearer");
+            response.put("role", role);
+            response.put("email", authentication.getName());
+
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            loginRateLimiter.registerFailedAttempt(key);
+            throw e;
+        }
     }
 }

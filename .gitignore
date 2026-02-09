@@ -34,3 +34,6 @@ build/
 
 ### Environment variables ###
 .env
+
+### Windows reserved names ###
+nul

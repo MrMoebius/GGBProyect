@@ -3,7 +3,10 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.JuegoDTO;
 import org.davide.ggbproyect.service.JuegoService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,11 +24,13 @@ public class JuegoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<JuegoDTO>> getAll() {
-        return ResponseEntity.ok(juegoService.getAll());
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
+    public ResponseEntity<Page<JuegoDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(juegoService.getAll(pageable));
     }
 
     @GetMapping("/filter")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<List<JuegoDTO>> filter(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String complejidad,
@@ -37,11 +42,13 @@ public class JuegoController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<JuegoDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(juegoService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JuegoDTO> create(@Valid @RequestBody JuegoDTO juegoDTO) {
         JuegoDTO created = juegoService.create(juegoDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -52,11 +59,13 @@ public class JuegoController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JuegoDTO> update(@PathVariable Integer id, @Valid @RequestBody JuegoDTO juegoDTO) {
         return ResponseEntity.ok(juegoService.update(id, juegoDTO));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         juegoService.delete(id);
         return ResponseEntity.noContent().build();
