@@ -69,11 +69,9 @@ public class JuegosCopiaService {
         return new JuegosCopiaDTO(juegosCopiaRepository.save(existingCopia));
     }
 
-    public List<JuegosCopiaDTO> filter(Integer idJuego, String estado) {
-        return juegosCopiaRepository.filter(idJuego, estado)
-                .stream()
-                .map(JuegosCopiaDTO::new)
-                .collect(Collectors.toList());
+    public Page<JuegosCopiaDTO> filter(Integer idJuego, String estado, Pageable pageable) {
+        return juegosCopiaRepository.filter(idJuego, estado, pageable)
+                .map(JuegosCopiaDTO::new);
     }
 
     public void delete(Integer id) {

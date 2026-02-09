@@ -78,12 +78,10 @@ public class JuegoService {
         return new JuegoDTO(juegoRepository.save(existingJuego));
     }
 
-    public List<JuegoDTO> filter(String nombre, String complejidad, String idioma,
-                                 String ubicacion, Boolean activo, Boolean recomendadoDosJugadores) {
-        return juegoRepository.filter(nombre, complejidad, idioma, ubicacion, activo, recomendadoDosJugadores)
-                .stream()
-                .map(JuegoDTO::new)
-                .collect(Collectors.toList());
+    public Page<JuegoDTO> filter(String nombre, String complejidad, String idioma,
+                                 String ubicacion, Boolean activo, Boolean recomendadoDosJugadores, Pageable pageable) {
+        return juegoRepository.filter(nombre, complejidad, idioma, ubicacion, activo, recomendadoDosJugadores, pageable)
+                .map(JuegoDTO::new);
     }
 
     public void delete(Integer id) {

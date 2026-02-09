@@ -1,6 +1,7 @@
 package org.davide.ggbproyect.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -9,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoMesa;
 import org.davide.ggbproyect.models.enums.UbicacionJuego;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 @Data
 @NoArgsConstructor
@@ -26,15 +28,18 @@ public class MesaDTO {
     private String nombreMesa;
 
     @NotNull
+    @Min(1)
     private Integer capacidad;
 
     @Size(max = 50)
     private String zona;
 
     @Size(max = 50)
+    @ValidEnum(enumClass = UbicacionJuego.class, message = "Valor de ubicacion invalido")
     private String ubicacion;
 
     @Size(max = 20)
+    @ValidEnum(enumClass = EstadoMesa.class, message = "Valor de estado invalido")
     private String estado;
 
     public MesaDTO(Mesa entity) {

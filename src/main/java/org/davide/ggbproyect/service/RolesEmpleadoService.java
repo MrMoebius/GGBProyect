@@ -49,11 +49,9 @@ public class RolesEmpleadoService {
         return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(existingRol));
     }
 
-    public List<RolesEmpleadoDTO> filter(String nombreRol) {
-        return rolesEmpleadoRepository.filter(nombreRol)
-                .stream()
-                .map(RolesEmpleadoDTO::new)
-                .collect(Collectors.toList());
+    public Page<RolesEmpleadoDTO> filter(String nombreRol, Pageable pageable) {
+        return rolesEmpleadoRepository.filter(nombreRol, pageable)
+                .map(RolesEmpleadoDTO::new);
     }
 
     public void delete(Integer id) {

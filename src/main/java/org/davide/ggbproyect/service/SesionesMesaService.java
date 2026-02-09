@@ -100,12 +100,10 @@ public class SesionesMesaService {
         return new SesionesMesaDTO(sesionesMesaRepository.save(existingSesion));
     }
 
-    public List<SesionesMesaDTO> filter(Integer idMesa, String estado,
-                                        Integer idReserva, Integer idEmpleadoApertura) {
-        return sesionesMesaRepository.filter(idMesa, estado, idReserva, idEmpleadoApertura)
-                .stream()
-                .map(SesionesMesaDTO::new)
-                .collect(Collectors.toList());
+    public Page<SesionesMesaDTO> filter(Integer idMesa, String estado,
+                                        Integer idReserva, Integer idEmpleadoApertura, Pageable pageable) {
+        return sesionesMesaRepository.filter(idMesa, estado, idReserva, idEmpleadoApertura, pageable)
+                .map(SesionesMesaDTO::new);
     }
 
     public void delete(Integer id) {

@@ -1,6 +1,8 @@
 package org.davide.ggbproyect.repository;
 
 import org.davide.ggbproyect.models.Producto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +17,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
            "(:nombre IS NULL OR LOWER(e.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) AND " +
            "(:categoria IS NULL OR LOWER(e.categoria) LIKE LOWER(CONCAT('%', :categoria, '%'))) AND " +
            "(:activo IS NULL OR e.activo = :activo)")
-    List<Producto> filter(@Param("nombre") String nombre,
+    Page<Producto> filter(@Param("nombre") String nombre,
                           @Param("categoria") String categoria,
-                          @Param("activo") Boolean activo);
+                          @Param("activo") Boolean activo,
+                          Pageable pageable);
 }

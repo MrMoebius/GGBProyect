@@ -79,11 +79,9 @@ public class LineasComandaService {
         return new LineasComandaDTO(lineasComandaRepository.save(existingLinea));
     }
 
-    public List<LineasComandaDTO> filter(Integer idComanda, Integer idProducto) {
-        return lineasComandaRepository.filter(idComanda, idProducto)
-                .stream()
-                .map(LineasComandaDTO::new)
-                .collect(Collectors.toList());
+    public Page<LineasComandaDTO> filter(Integer idComanda, Integer idProducto, Pageable pageable) {
+        return lineasComandaRepository.filter(idComanda, idProducto, pageable)
+                .map(LineasComandaDTO::new);
     }
 
     public void delete(Integer id) {

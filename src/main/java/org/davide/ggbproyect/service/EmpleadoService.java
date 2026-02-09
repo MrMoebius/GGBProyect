@@ -82,11 +82,19 @@ public class EmpleadoService {
         return new EmpleadoDTO(empleadoRepository.save(existingEmpleado));
     }
 
-    public List<EmpleadoDTO> filter(String nombre, String email, Integer idRol, String estado) {
-        return empleadoRepository.filter(nombre, email, idRol, estado)
-                .stream()
-                .map(EmpleadoDTO::new)
-                .collect(Collectors.toList());
+    public Page<EmpleadoDTO> filter(String nombre, String email, Integer idRol, String estado, Pageable pageable) {
+        return empleadoRepository.filter(nombre, email, idRol, estado, pageable)
+                .map(EmpleadoDTO::new);
+    }
+
+    public void changePassword(Integer id, String currentPassword, String newPassword) {
+        Empleado empleado = empleadoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Empleado con id " + id + " no encontrado"));
+        if (!passwordEncoder.matches(currentPassword, empleado.getPassword())) {
+            throw new IllegalArgumentException("La contrasena actual es incorrecta");
+        }
+        empleado.setPassword(passwordEncoder.encode(newPassword));
+        empleadoRepository.save(empleado);
     }
 
     public void delete(Integer id) {

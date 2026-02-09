@@ -1,7 +1,9 @@
 package org.davide.ggbproyect.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,9 +25,11 @@ public class LineasComandaDTO {
     private Integer idProducto;
 
     @NotNull
+    @Min(1)
     private Integer cantidad;
 
     @NotNull
+    @Positive
     private BigDecimal precioUnitarioHistorico;
 
     @Size(max = 30)

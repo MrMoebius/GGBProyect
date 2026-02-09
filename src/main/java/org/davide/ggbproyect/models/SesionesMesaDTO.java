@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoSesion;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 import java.time.Instant;
 
@@ -27,6 +28,7 @@ public class SesionesMesaDTO {
 
     private Instant fin;
 
+    @ValidEnum(enumClass = EstadoSesion.class, message = "Valor de estado invalido")
     private String estado;
 
     private Instant fechaHoraApertura;

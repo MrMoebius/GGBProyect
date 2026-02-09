@@ -1,12 +1,14 @@
 package org.davide.ggbproyect.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoReserva;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 import java.time.Instant;
 
@@ -26,11 +28,13 @@ public class ReservasMesaDTO {
 
     private Instant fechaHoraFin;
 
+    @Min(1)
     private Integer numPersonas;
 
     private Integer idJuegoDeseado;
 
     @Size(max = 30)
+    @ValidEnum(enumClass = EstadoReserva.class, message = "Valor de estado invalido")
     private String estado;
 
     private String notas;

@@ -30,9 +30,10 @@ public class RolesEmpleadoController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<RolesEmpleadoDTO>> filter(
-            @RequestParam(required = false) String nombreRol) {
-        return ResponseEntity.ok(rolesEmpleadoService.filter(nombreRol));
+    public ResponseEntity<Page<RolesEmpleadoDTO>> filter(
+            @RequestParam(required = false) String nombreRol,
+            Pageable pageable) {
+        return ResponseEntity.ok(rolesEmpleadoService.filter(nombreRol, pageable));
     }
 
     @GetMapping("/{id}")

@@ -19,11 +19,18 @@ public class JwtTokenProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    @Value("${app.jwt-secret}")
-    private String jwtSecret;
+    private final String jwtSecret;
 
-    @Value("${app.jwt-expiration-milliseconds}")
-    private long jwtExpirationDate;
+    public JwtTokenProvider(@Value("${app.jwt-secret}") String jwtSecret,
+                            @Value("${app.jwt-expiration-milliseconds}") long jwtExpirationDate) {
+        if (jwtSecret == null || jwtSecret.length() < 32) {
+            throw new IllegalArgumentException("JWT_SECRET debe tener al menos 32 caracteres");
+        }
+        this.jwtSecret = jwtSecret;
+        this.jwtExpirationDate = jwtExpirationDate;
+    }
+
+    private final long jwtExpirationDate;
 
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();

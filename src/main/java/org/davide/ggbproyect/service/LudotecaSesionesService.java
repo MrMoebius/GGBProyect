@@ -83,11 +83,9 @@ public class LudotecaSesionesService {
         return new LudotecaSesionesDTO(ludotecaSesionesRepository.save(existingSesion));
     }
 
-    public List<LudotecaSesionesDTO> filter(Integer idSesion) {
-        return ludotecaSesionesRepository.filter(idSesion)
-                .stream()
-                .map(LudotecaSesionesDTO::new)
-                .collect(Collectors.toList());
+    public Page<LudotecaSesionesDTO> filter(Integer idSesion, Pageable pageable) {
+        return ludotecaSesionesRepository.filter(idSesion, pageable)
+                .map(LudotecaSesionesDTO::new);
     }
 
     public void delete(Integer id) {

@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.security;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -10,6 +11,7 @@ public class LoginRateLimiter {
 
     private static final int MAX_ATTEMPTS = 5;
     private static final long BLOCK_DURATION_SECONDS = 300; // 5 minutes
+    private static final long EXPIRY_SECONDS = 600; // 10 minutes
 
     private final ConcurrentHashMap<String, LoginAttempt> attempts = new ConcurrentHashMap<>();
 
@@ -44,6 +46,18 @@ public class LoginRateLimiter {
 
     public void registerSuccessfulLogin(String key) {
         attempts.remove(key);
+    }
+
+    @Scheduled(fixedRate = 600000) // every 10 minutes
+    public void cleanup() {
+        Instant cutoff = Instant.now().minusSeconds(EXPIRY_SECONDS);
+        attempts.entrySet().removeIf(entry -> {
+            LoginAttempt attempt = entry.getValue();
+            if (attempt.blockedUntil != null) {
+                return Instant.now().isAfter(attempt.blockedUntil);
+            }
+            return attempt.lastAttempt.isBefore(cutoff);
+        });
     }
 
     private static class LoginAttempt {

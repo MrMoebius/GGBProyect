@@ -3,6 +3,7 @@ package org.davide.ggbproyect.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,6 +31,7 @@ public class ProductoDTO {
     private String categoria;
 
     @NotNull
+    @Positive
     private BigDecimal precio;
 
     private Boolean activo;

@@ -1,6 +1,8 @@
 package org.davide.ggbproyect.repository;
 
 import org.davide.ggbproyect.models.RolesEmpleado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,5 +15,6 @@ public interface RolesEmpleadoRepository extends JpaRepository<RolesEmpleado, In
 
     @Query("SELECT e FROM RolesEmpleado e WHERE " +
            "(:nombreRol IS NULL OR LOWER(e.nombreRol) LIKE LOWER(CONCAT('%', :nombreRol, '%')))")
-    List<RolesEmpleado> filter(@Param("nombreRol") String nombreRol);
+    Page<RolesEmpleado> filter(@Param("nombreRol") String nombreRol,
+                               Pageable pageable);
 }

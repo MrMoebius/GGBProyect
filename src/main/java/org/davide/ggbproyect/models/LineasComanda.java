@@ -13,7 +13,10 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
-@Table(name = "lineas_comanda")
+@Table(name = "lineas_comanda", indexes = {
+    @Index(name = "idx_linea_comanda", columnList = "id_comanda"),
+    @Index(name = "idx_linea_producto", columnList = "id_producto")
+})
 @Getter
 @Setter
 @ToString
@@ -23,6 +26,10 @@ public class LineasComanda {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_linea", nullable = false)
     private Integer id;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

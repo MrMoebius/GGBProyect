@@ -31,14 +31,15 @@ public class JuegoController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
-    public ResponseEntity<List<JuegoDTO>> filter(
+    public ResponseEntity<Page<JuegoDTO>> filter(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String complejidad,
             @RequestParam(required = false) String idioma,
             @RequestParam(required = false) String ubicacion,
             @RequestParam(required = false) Boolean activo,
-            @RequestParam(required = false) Boolean recomendadoDosJugadores) {
-        return ResponseEntity.ok(juegoService.filter(nombre, complejidad, idioma, ubicacion, activo, recomendadoDosJugadores));
+            @RequestParam(required = false) Boolean recomendadoDosJugadores,
+            Pageable pageable) {
+        return ResponseEntity.ok(juegoService.filter(nombre, complejidad, idioma, ubicacion, activo, recomendadoDosJugadores, pageable));
     }
 
     @GetMapping("/{id}")

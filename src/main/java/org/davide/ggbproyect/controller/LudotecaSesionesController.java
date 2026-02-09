@@ -30,9 +30,10 @@ public class LudotecaSesionesController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<LudotecaSesionesDTO>> filter(
-            @RequestParam(required = false) Integer idSesion) {
-        return ResponseEntity.ok(ludotecaSesionesService.filter(idSesion));
+    public ResponseEntity<Page<LudotecaSesionesDTO>> filter(
+            @RequestParam(required = false) Integer idSesion,
+            Pageable pageable) {
+        return ResponseEntity.ok(ludotecaSesionesService.filter(idSesion, pageable));
     }
 
     @GetMapping("/{id}")

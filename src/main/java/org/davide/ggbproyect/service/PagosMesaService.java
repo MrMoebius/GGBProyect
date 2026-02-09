@@ -78,11 +78,9 @@ public class PagosMesaService {
         return new PagosMesaDTO(pagosMesaRepository.save(existingPago));
     }
 
-    public List<PagosMesaDTO> filter(Integer idSesion, String metodoPago, String estado) {
-        return pagosMesaRepository.filter(idSesion, metodoPago, estado)
-                .stream()
-                .map(PagosMesaDTO::new)
-                .collect(Collectors.toList());
+    public Page<PagosMesaDTO> filter(Integer idSesion, String metodoPago, String estado, Pageable pageable) {
+        return pagosMesaRepository.filter(idSesion, metodoPago, estado, pageable)
+                .map(PagosMesaDTO::new);
     }
 
     public void delete(Integer id) {

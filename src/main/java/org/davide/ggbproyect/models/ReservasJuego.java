@@ -13,7 +13,10 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@Table(name = "reservas_juegos")
+@Table(name = "reservas_juegos", indexes = {
+    @Index(name = "idx_reservajuego_sesion", columnList = "id_sesion"),
+    @Index(name = "idx_reservajuego_copia", columnList = "id_copia")
+})
 @Getter
 @Setter
 @ToString
@@ -23,6 +26,10 @@ public class ReservasJuego {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_reserva_juego", nullable = false)
     private Integer id;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

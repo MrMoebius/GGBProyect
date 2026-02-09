@@ -1,6 +1,7 @@
 package org.davide.ggbproyect.controller;
 
 import jakarta.validation.Valid;
+import org.davide.ggbproyect.models.ChangePasswordDTO;
 import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.service.ClienteService;
 import org.springframework.data.domain.Page;
@@ -31,11 +32,12 @@ public class ClienteController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    public ResponseEntity<List<ClienteDTO>> filter(
+    public ResponseEntity<Page<ClienteDTO>> filter(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String email,
-            @RequestParam(required = false) String telefono) {
-        return ResponseEntity.ok(clienteService.filter(nombre, email, telefono));
+            @RequestParam(required = false) String telefono,
+            Pageable pageable) {
+        return ResponseEntity.ok(clienteService.filter(nombre, email, telefono, pageable));
     }
 
     @GetMapping("/{id}")
@@ -59,6 +61,14 @@ public class ClienteController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ClienteDTO> update(@PathVariable Integer id, @Valid @RequestBody ClienteDTO clienteDTO) {
         return ResponseEntity.ok(clienteService.update(id, clienteDTO));
+    }
+
+    @PutMapping("/{id}/password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
+    public ResponseEntity<Void> changePassword(@PathVariable Integer id,
+                                                @Valid @RequestBody ChangePasswordDTO dto) {
+        clienteService.changePassword(id, dto.getCurrentPassword(), dto.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

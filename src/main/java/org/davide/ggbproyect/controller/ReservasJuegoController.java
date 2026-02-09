@@ -30,11 +30,12 @@ public class ReservasJuegoController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<ReservasJuegoDTO>> filter(
+    public ResponseEntity<Page<ReservasJuegoDTO>> filter(
             @RequestParam(required = false) Integer idSesion,
             @RequestParam(required = false) Integer idCopia,
-            @RequestParam(required = false) String estado) {
-        return ResponseEntity.ok(reservasJuegoService.filter(idSesion, idCopia, estado));
+            @RequestParam(required = false) String estado,
+            Pageable pageable) {
+        return ResponseEntity.ok(reservasJuegoService.filter(idSesion, idCopia, estado, pageable));
     }
 
     @GetMapping("/{id}")

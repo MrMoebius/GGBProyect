@@ -70,11 +70,9 @@ public class PeticionesPagoService {
         return new PeticionesPagoDTO(peticionesPagoRepository.save(existingPeticion));
     }
 
-    public List<PeticionesPagoDTO> filter(Integer idSesion, String metodoPreferido, Boolean atendida) {
-        return peticionesPagoRepository.filter(idSesion, metodoPreferido, atendida)
-                .stream()
-                .map(PeticionesPagoDTO::new)
-                .collect(Collectors.toList());
+    public Page<PeticionesPagoDTO> filter(Integer idSesion, String metodoPreferido, Boolean atendida, Pageable pageable) {
+        return peticionesPagoRepository.filter(idSesion, metodoPreferido, atendida, pageable)
+                .map(PeticionesPagoDTO::new);
     }
 
     public void delete(Integer id) {

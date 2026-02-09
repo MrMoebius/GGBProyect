@@ -31,10 +31,11 @@ public class TarifasLudotecaController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
-    public ResponseEntity<List<TarifasLudotecaDTO>> filter(
+    public ResponseEntity<Page<TarifasLudotecaDTO>> filter(
             @RequestParam(required = false) String nombreTramo,
-            @RequestParam(required = false) Boolean activo) {
-        return ResponseEntity.ok(tarifasLudotecaService.filter(nombreTramo, activo));
+            @RequestParam(required = false) Boolean activo,
+            Pageable pageable) {
+        return ResponseEntity.ok(tarifasLudotecaService.filter(nombreTramo, activo, pageable));
     }
 
     @GetMapping("/{id}")

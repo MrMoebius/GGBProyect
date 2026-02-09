@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.MetodoPago;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 import java.time.Instant;
 
@@ -21,6 +22,7 @@ public class PeticionesPagoDTO {
     private Integer idSesion;
 
     @Size(max = 20)
+    @ValidEnum(enumClass = MetodoPago.class, message = "Valor de metodo preferido invalido")
     private String metodoPreferido;
 
     private Boolean atendida;

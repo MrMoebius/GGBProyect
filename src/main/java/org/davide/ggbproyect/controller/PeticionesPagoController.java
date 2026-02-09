@@ -31,11 +31,12 @@ public class PeticionesPagoController {
 
     @GetMapping("/filter")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    public ResponseEntity<List<PeticionesPagoDTO>> filter(
+    public ResponseEntity<Page<PeticionesPagoDTO>> filter(
             @RequestParam(required = false) Integer idSesion,
             @RequestParam(required = false) String metodoPreferido,
-            @RequestParam(required = false) Boolean atendida) {
-        return ResponseEntity.ok(peticionesPagoService.filter(idSesion, metodoPreferido, atendida));
+            @RequestParam(required = false) Boolean atendida,
+            Pageable pageable) {
+        return ResponseEntity.ok(peticionesPagoService.filter(idSesion, metodoPreferido, atendida, pageable));
     }
 
     @GetMapping("/{id}")

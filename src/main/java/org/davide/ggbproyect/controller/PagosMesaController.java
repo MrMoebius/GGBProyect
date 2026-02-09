@@ -30,11 +30,12 @@ public class PagosMesaController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<PagosMesaDTO>> filter(
+    public ResponseEntity<Page<PagosMesaDTO>> filter(
             @RequestParam(required = false) Integer idSesion,
             @RequestParam(required = false) String metodoPago,
-            @RequestParam(required = false) String estado) {
-        return ResponseEntity.ok(pagosMesaService.filter(idSesion, metodoPago, estado));
+            @RequestParam(required = false) String estado,
+            Pageable pageable) {
+        return ResponseEntity.ok(pagosMesaService.filter(idSesion, metodoPago, estado, pageable));
     }
 
     @GetMapping("/{id}")

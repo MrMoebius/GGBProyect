@@ -56,11 +56,19 @@ public class ClienteService {
         return new ClienteDTO(clienteRepository.save(existingCliente));
     }
 
-    public List<ClienteDTO> filter(String nombre, String email, String telefono) {
-        return clienteRepository.filter(nombre, email, telefono)
-                .stream()
-                .map(ClienteDTO::new)
-                .collect(Collectors.toList());
+    public Page<ClienteDTO> filter(String nombre, String email, String telefono, Pageable pageable) {
+        return clienteRepository.filter(nombre, email, telefono, pageable)
+                .map(ClienteDTO::new);
+    }
+
+    public void changePassword(Integer id, String currentPassword, String newPassword) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente con id " + id + " no encontrado"));
+        if (!passwordEncoder.matches(currentPassword, cliente.getPassword())) {
+            throw new IllegalArgumentException("La contrasena actual es incorrecta");
+        }
+        cliente.setPassword(passwordEncoder.encode(newPassword));
+        clienteRepository.save(cliente);
     }
 
     public void delete(Integer id) {
