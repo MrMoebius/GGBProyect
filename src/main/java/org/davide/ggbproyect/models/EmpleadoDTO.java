@@ -2,6 +2,7 @@ package org.davide.ggbproyect.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -20,10 +21,12 @@ public class EmpleadoDTO {
 
     @Size(max = 100)
     @NotNull
+    @NotBlank
     private String nombre;
 
     @Size(max = 150)
     @NotNull
+    @NotBlank
     @Email
     private String email;
 

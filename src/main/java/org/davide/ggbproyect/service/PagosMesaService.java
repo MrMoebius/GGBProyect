@@ -6,6 +6,9 @@ import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.models.enums.EstadoPago;
 import org.davide.ggbproyect.models.enums.MetodoPago;
 import org.davide.ggbproyect.repository.PagosMesaRepository;
+import org.davide.ggbproyect.repository.SesionesMesaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,15 +22,17 @@ import java.util.stream.Collectors;
 public class PagosMesaService {
 
     private final PagosMesaRepository pagosMesaRepository;
+    private final SesionesMesaRepository sesionesMesaRepository;
 
-    public PagosMesaService(PagosMesaRepository pagosMesaRepository) {
+    public PagosMesaService(PagosMesaRepository pagosMesaRepository,
+                            SesionesMesaRepository sesionesMesaRepository) {
         this.pagosMesaRepository = pagosMesaRepository;
+        this.sesionesMesaRepository = sesionesMesaRepository;
     }
 
-    public List<PagosMesaDTO> getAll() {
-        return pagosMesaRepository.findAll().stream()
-                .map(PagosMesaDTO::new)
-                .collect(Collectors.toList());
+    public Page<PagosMesaDTO> getAll(Pageable pageable) {
+        return pagosMesaRepository.findAll(pageable)
+                .map(PagosMesaDTO::new);
     }
 
     public PagosMesaDTO getById(Integer id) {
@@ -38,6 +43,11 @@ public class PagosMesaService {
 
     public PagosMesaDTO create(PagosMesaDTO pagosMesaDTO) {
         PagosMesa pagosMesa = pagosMesaDTO.toEntity();
+        if (pagosMesaDTO.getIdSesion() != null) {
+            SesionesMesa sesion = sesionesMesaRepository.findById(pagosMesaDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + pagosMesaDTO.getIdSesion() + " no encontrada"));
+            pagosMesa.setIdSesion(sesion);
+        }
         return new PagosMesaDTO(pagosMesaRepository.save(pagosMesa));
     }
 
@@ -45,8 +55,8 @@ public class PagosMesaService {
         PagosMesa existingPago = pagosMesaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pago de mesa con id " + id + " no encontrado"));
         if (pagosMesaDTO.getIdSesion() != null) {
-            SesionesMesa sesion = new SesionesMesa();
-            sesion.setId(pagosMesaDTO.getIdSesion());
+            SesionesMesa sesion = sesionesMesaRepository.findById(pagosMesaDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + pagosMesaDTO.getIdSesion() + " no encontrada"));
             existingPago.setIdSesion(sesion);
         }
         existingPago.setFechaHora(pagosMesaDTO.getFechaHora());

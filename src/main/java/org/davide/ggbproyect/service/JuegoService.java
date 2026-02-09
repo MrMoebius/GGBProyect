@@ -6,6 +6,8 @@ import org.davide.ggbproyect.models.enums.ComplejidadJuego;
 import org.davide.ggbproyect.models.enums.IdiomaJuego;
 import org.davide.ggbproyect.models.enums.UbicacionJuego;
 import org.davide.ggbproyect.repository.JuegoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +26,9 @@ public class JuegoService {
         this.juegoRepository = juegoRepository;
     }
 
-    public List<JuegoDTO> getAll() {
-        return juegoRepository.findAll().stream()
-                .map(JuegoDTO::new)
-                .collect(Collectors.toList());
+    public Page<JuegoDTO> getAll(Pageable pageable) {
+        return juegoRepository.findAll(pageable)
+                .map(JuegoDTO::new);
     }
 
     public JuegoDTO getById(Integer id) {

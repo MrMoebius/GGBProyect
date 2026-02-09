@@ -3,7 +3,10 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.ProductoDTO;
 import org.davide.ggbproyect.service.ProductoService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,11 +24,13 @@ public class ProductoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductoDTO>> getAll() {
-        return ResponseEntity.ok(productoService.getAll());
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
+    public ResponseEntity<Page<ProductoDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(productoService.getAll(pageable));
     }
 
     @GetMapping("/filter")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<List<ProductoDTO>> filter(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String categoria,
@@ -34,11 +39,13 @@ public class ProductoController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<ProductoDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(productoService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductoDTO> create(@Valid @RequestBody ProductoDTO productoDTO) {
         ProductoDTO created = productoService.create(productoDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -49,11 +56,13 @@ public class ProductoController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductoDTO> update(@PathVariable Integer id, @Valid @RequestBody ProductoDTO productoDTO) {
         return ResponseEntity.ok(productoService.update(id, productoDTO));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         productoService.delete(id);
         return ResponseEntity.noContent().build();

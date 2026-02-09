@@ -3,6 +3,8 @@ package org.davide.ggbproyect.service;
 import org.davide.ggbproyect.models.TarifasLudoteca;
 import org.davide.ggbproyect.models.TarifasLudotecaDTO;
 import org.davide.ggbproyect.repository.TarifasLudotecaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +23,9 @@ public class TarifasLudotecaService {
         this.tarifasLudotecaRepository = tarifasLudotecaRepository;
     }
 
-    public List<TarifasLudotecaDTO> getAll() {
-        return tarifasLudotecaRepository.findAll().stream()
-                .map(TarifasLudotecaDTO::new)
-                .collect(Collectors.toList());
+    public Page<TarifasLudotecaDTO> getAll(Pageable pageable) {
+        return tarifasLudotecaRepository.findAll(pageable)
+                .map(TarifasLudotecaDTO::new);
     }
 
     public TarifasLudotecaDTO getById(Integer id) {

@@ -4,7 +4,11 @@ import org.davide.ggbproyect.models.Comanda;
 import org.davide.ggbproyect.models.LineasComanda;
 import org.davide.ggbproyect.models.LineasComandaDTO;
 import org.davide.ggbproyect.models.Producto;
+import org.davide.ggbproyect.repository.ComandaRepository;
 import org.davide.ggbproyect.repository.LineasComandaRepository;
+import org.davide.ggbproyect.repository.ProductoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +22,20 @@ import java.util.stream.Collectors;
 public class LineasComandaService {
 
     private final LineasComandaRepository lineasComandaRepository;
+    private final ComandaRepository comandaRepository;
+    private final ProductoRepository productoRepository;
 
-    public LineasComandaService(LineasComandaRepository lineasComandaRepository) {
+    public LineasComandaService(LineasComandaRepository lineasComandaRepository,
+                                ComandaRepository comandaRepository,
+                                ProductoRepository productoRepository) {
         this.lineasComandaRepository = lineasComandaRepository;
+        this.comandaRepository = comandaRepository;
+        this.productoRepository = productoRepository;
     }
 
-    public List<LineasComandaDTO> getAll() {
-        return lineasComandaRepository.findAll().stream()
-                .map(LineasComandaDTO::new)
-                .collect(Collectors.toList());
+    public Page<LineasComandaDTO> getAll(Pageable pageable) {
+        return lineasComandaRepository.findAll(pageable)
+                .map(LineasComandaDTO::new);
     }
 
     public LineasComandaDTO getById(Integer id) {
@@ -37,6 +46,16 @@ public class LineasComandaService {
 
     public LineasComandaDTO create(LineasComandaDTO lineasComandaDTO) {
         LineasComanda lineasComanda = lineasComandaDTO.toEntity();
+        if (lineasComandaDTO.getIdComanda() != null) {
+            Comanda comanda = comandaRepository.findById(lineasComandaDTO.getIdComanda())
+                    .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + lineasComandaDTO.getIdComanda() + " no encontrada"));
+            lineasComanda.setIdComanda(comanda);
+        }
+        if (lineasComandaDTO.getIdProducto() != null) {
+            Producto producto = productoRepository.findById(lineasComandaDTO.getIdProducto())
+                    .orElseThrow(() -> new EntityNotFoundException("Producto con id " + lineasComandaDTO.getIdProducto() + " no encontrado"));
+            lineasComanda.setIdProducto(producto);
+        }
         return new LineasComandaDTO(lineasComandaRepository.save(lineasComanda));
     }
 
@@ -44,13 +63,13 @@ public class LineasComandaService {
         LineasComanda existingLinea = lineasComandaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada"));
         if (lineasComandaDTO.getIdComanda() != null) {
-            Comanda comanda = new Comanda();
-            comanda.setId(lineasComandaDTO.getIdComanda());
+            Comanda comanda = comandaRepository.findById(lineasComandaDTO.getIdComanda())
+                    .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + lineasComandaDTO.getIdComanda() + " no encontrada"));
             existingLinea.setIdComanda(comanda);
         }
         if (lineasComandaDTO.getIdProducto() != null) {
-            Producto producto = new Producto();
-            producto.setId(lineasComandaDTO.getIdProducto());
+            Producto producto = productoRepository.findById(lineasComandaDTO.getIdProducto())
+                    .orElseThrow(() -> new EntityNotFoundException("Producto con id " + lineasComandaDTO.getIdProducto() + " no encontrado"));
             existingLinea.setIdProducto(producto);
         }
         existingLinea.setCantidad(lineasComandaDTO.getCantidad());

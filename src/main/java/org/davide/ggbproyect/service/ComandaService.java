@@ -5,6 +5,9 @@ import org.davide.ggbproyect.models.ComandaDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.models.enums.EstadoComanda;
 import org.davide.ggbproyect.repository.ComandaRepository;
+import org.davide.ggbproyect.repository.SesionesMesaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +21,17 @@ import java.util.stream.Collectors;
 public class ComandaService {
 
     private final ComandaRepository comandaRepository;
+    private final SesionesMesaRepository sesionesMesaRepository;
 
-    public ComandaService(ComandaRepository comandaRepository) {
+    public ComandaService(ComandaRepository comandaRepository,
+                          SesionesMesaRepository sesionesMesaRepository) {
         this.comandaRepository = comandaRepository;
+        this.sesionesMesaRepository = sesionesMesaRepository;
     }
 
-    public List<ComandaDTO> getAll() {
-        return comandaRepository.findAll().stream()
-                .map(ComandaDTO::new)
-                .collect(Collectors.toList());
+    public Page<ComandaDTO> getAll(Pageable pageable) {
+        return comandaRepository.findAll(pageable)
+                .map(ComandaDTO::new);
     }
 
     public ComandaDTO getById(Integer id) {
@@ -37,6 +42,11 @@ public class ComandaService {
 
     public ComandaDTO create(ComandaDTO comandaDTO) {
         Comanda comanda = comandaDTO.toEntity();
+        if (comandaDTO.getIdSesion() != null) {
+            SesionesMesa sesion = sesionesMesaRepository.findById(comandaDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + comandaDTO.getIdSesion() + " no encontrada"));
+            comanda.setIdSesion(sesion);
+        }
         return new ComandaDTO(comandaRepository.save(comanda));
     }
 
@@ -44,8 +54,8 @@ public class ComandaService {
         Comanda existingComanda = comandaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + id + " no encontrada"));
         if (comandaDTO.getIdSesion() != null) {
-            SesionesMesa sesion = new SesionesMesa();
-            sesion.setId(comandaDTO.getIdSesion());
+            SesionesMesa sesion = sesionesMesaRepository.findById(comandaDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + comandaDTO.getIdSesion() + " no encontrada"));
             existingComanda.setIdSesion(sesion);
         }
         existingComanda.setFechaHora(comandaDTO.getFechaHora());

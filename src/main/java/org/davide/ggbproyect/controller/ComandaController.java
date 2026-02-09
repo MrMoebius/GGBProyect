@@ -3,7 +3,10 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.ComandaDTO;
 import org.davide.ggbproyect.service.ComandaService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -12,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/comandas")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
 public class ComandaController {
 
     private final ComandaService comandaService;
@@ -21,8 +25,8 @@ public class ComandaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ComandaDTO>> getAll() {
-        return ResponseEntity.ok(comandaService.getAll());
+    public ResponseEntity<Page<ComandaDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(comandaService.getAll(pageable));
     }
 
     @GetMapping("/filter")

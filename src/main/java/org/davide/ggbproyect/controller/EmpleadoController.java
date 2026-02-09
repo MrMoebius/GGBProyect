@@ -3,7 +3,10 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.EmpleadoDTO;
 import org.davide.ggbproyect.service.EmpleadoService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -12,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/empleados")
+@PreAuthorize("hasRole('ADMIN')")
 public class EmpleadoController {
 
     private final EmpleadoService empleadoService;
@@ -21,8 +25,8 @@ public class EmpleadoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EmpleadoDTO>> getAll() {
-        return ResponseEntity.ok(empleadoService.getAll());
+    public ResponseEntity<Page<EmpleadoDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(empleadoService.getAll(pageable));
     }
 
     @GetMapping("/filter")

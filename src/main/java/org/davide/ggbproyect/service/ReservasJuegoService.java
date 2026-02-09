@@ -4,7 +4,11 @@ import org.davide.ggbproyect.models.JuegosCopia;
 import org.davide.ggbproyect.models.ReservasJuego;
 import org.davide.ggbproyect.models.ReservasJuegoDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
+import org.davide.ggbproyect.repository.JuegosCopiaRepository;
 import org.davide.ggbproyect.repository.ReservasJuegoRepository;
+import org.davide.ggbproyect.repository.SesionesMesaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +22,20 @@ import java.util.stream.Collectors;
 public class ReservasJuegoService {
 
     private final ReservasJuegoRepository reservasJuegoRepository;
+    private final SesionesMesaRepository sesionesMesaRepository;
+    private final JuegosCopiaRepository juegosCopiaRepository;
 
-    public ReservasJuegoService(ReservasJuegoRepository reservasJuegoRepository) {
+    public ReservasJuegoService(ReservasJuegoRepository reservasJuegoRepository,
+                                SesionesMesaRepository sesionesMesaRepository,
+                                JuegosCopiaRepository juegosCopiaRepository) {
         this.reservasJuegoRepository = reservasJuegoRepository;
+        this.sesionesMesaRepository = sesionesMesaRepository;
+        this.juegosCopiaRepository = juegosCopiaRepository;
     }
 
-    public List<ReservasJuegoDTO> getAll() {
-        return reservasJuegoRepository.findAll().stream()
-                .map(ReservasJuegoDTO::new)
-                .collect(Collectors.toList());
+    public Page<ReservasJuegoDTO> getAll(Pageable pageable) {
+        return reservasJuegoRepository.findAll(pageable)
+                .map(ReservasJuegoDTO::new);
     }
 
     public ReservasJuegoDTO getById(Integer id) {
@@ -37,6 +46,16 @@ public class ReservasJuegoService {
 
     public ReservasJuegoDTO create(ReservasJuegoDTO reservasJuegoDTO) {
         ReservasJuego reservasJuego = reservasJuegoDTO.toEntity();
+        if (reservasJuegoDTO.getIdSesion() != null) {
+            SesionesMesa sesion = sesionesMesaRepository.findById(reservasJuegoDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + reservasJuegoDTO.getIdSesion() + " no encontrada"));
+            reservasJuego.setIdSesion(sesion);
+        }
+        if (reservasJuegoDTO.getIdCopia() != null) {
+            JuegosCopia copia = juegosCopiaRepository.findById(reservasJuegoDTO.getIdCopia())
+                    .orElseThrow(() -> new EntityNotFoundException("Copia de juego con id " + reservasJuegoDTO.getIdCopia() + " no encontrada"));
+            reservasJuego.setIdCopia(copia);
+        }
         return new ReservasJuegoDTO(reservasJuegoRepository.save(reservasJuego));
     }
 
@@ -44,13 +63,13 @@ public class ReservasJuegoService {
         ReservasJuego existingReserva = reservasJuegoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Reserva de juego con id " + id + " no encontrada"));
         if (reservasJuegoDTO.getIdSesion() != null) {
-            SesionesMesa sesion = new SesionesMesa();
-            sesion.setId(reservasJuegoDTO.getIdSesion());
+            SesionesMesa sesion = sesionesMesaRepository.findById(reservasJuegoDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + reservasJuegoDTO.getIdSesion() + " no encontrada"));
             existingReserva.setIdSesion(sesion);
         }
         if (reservasJuegoDTO.getIdCopia() != null) {
-            JuegosCopia copia = new JuegosCopia();
-            copia.setId(reservasJuegoDTO.getIdCopia());
+            JuegosCopia copia = juegosCopiaRepository.findById(reservasJuegoDTO.getIdCopia())
+                    .orElseThrow(() -> new EntityNotFoundException("Copia de juego con id " + reservasJuegoDTO.getIdCopia() + " no encontrada"));
             existingReserva.setIdCopia(copia);
         }
         existingReserva.setHoraInicio(reservasJuegoDTO.getHoraInicio());
