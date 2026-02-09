@@ -64,6 +64,7 @@ public class JuegoService {
             }
         }
         existingJuego.setDescripcion(juegoDTO.getDescripcion());
+        existingJuego.setObservaciones(juegoDTO.getObservaciones());
         if (juegoDTO.getUbicacion() != null) {
             try {
                 existingJuego.setUbicacion(UbicacionJuego.valueOf(juegoDTO.getUbicacion()));

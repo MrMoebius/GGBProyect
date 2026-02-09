@@ -51,9 +51,11 @@ Juego {
     @Column(name = "idioma", length = 50)
     private IdiomaJuego idioma;
 
-    @Lob
-    @Column(name = "descripcion")
+    @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(name = "observaciones", columnDefinition = "TEXT")
+    private String observaciones;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ubicacion", length = 100)
