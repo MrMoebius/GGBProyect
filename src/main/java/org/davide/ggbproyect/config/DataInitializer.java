@@ -12,7 +12,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -64,7 +64,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setEmail("admin@ggbproyect.com");
             admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setIdRol(adminRole);
-            admin.setFechaIngreso(Instant.now());
+            admin.setFechaIngreso(LocalDate.now());
             admin.setEstado(EstadoEmpleado.ACTIVO);
 
             empleadoRepository.save(admin);
