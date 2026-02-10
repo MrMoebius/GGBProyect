@@ -22,6 +22,10 @@ public class Producto {
     @Column(name = "id_producto", nullable = false)
     private Integer id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Size(max = 150)
     @NotNull
     @Column(name = "nombre", nullable = false, length = 150)

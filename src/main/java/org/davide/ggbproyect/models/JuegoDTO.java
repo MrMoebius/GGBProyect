@@ -1,5 +1,7 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -8,15 +10,18 @@ import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.ComplejidadJuego;
 import org.davide.ggbproyect.models.enums.IdiomaJuego;
 import org.davide.ggbproyect.models.enums.UbicacionJuego;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class JuegoDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @Size(max = 150)
     @NotNull
+    @NotBlank
     private String nombre;
 
     private Integer minJugadores;
@@ -25,15 +30,20 @@ public class JuegoDTO {
 
     private Integer duracionMediaMin;
 
+    @ValidEnum(enumClass = ComplejidadJuego.class, message = "Valor de complejidad invalido")
     private String complejidad;
 
     @Size(max = 255)
     private String genero;
 
+    @ValidEnum(enumClass = IdiomaJuego.class, message = "Valor de idioma invalido")
     private String idioma;
 
     private String descripcion;
 
+    private String observaciones;
+
+    @ValidEnum(enumClass = UbicacionJuego.class, message = "Valor de ubicacion invalido")
     private String ubicacion;
 
     private Boolean recomendadoDosJugadores;
@@ -50,6 +60,7 @@ public class JuegoDTO {
         this.genero = entity.getGenero();
         this.idioma = entity.getIdioma() != null ? entity.getIdioma().name() : null;
         this.descripcion = entity.getDescripcion();
+        this.observaciones = entity.getObservaciones();
         this.ubicacion = entity.getUbicacion() != null ? entity.getUbicacion().name() : null;
         this.recomendadoDosJugadores = entity.getRecomendadoDosJugadores();
         this.activo = entity.getActivo();
@@ -66,7 +77,7 @@ public class JuegoDTO {
             try {
                 entity.setComplejidad(ComplejidadJuego.valueOf(this.complejidad));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum value or leave null
+                throw new IllegalArgumentException("Valor de complejidad invalido: " + this.complejidad);
             }
         }
         entity.setGenero(this.genero);
@@ -74,15 +85,16 @@ public class JuegoDTO {
             try {
                 entity.setIdioma(IdiomaJuego.valueOf(this.idioma));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum value
+                throw new IllegalArgumentException("Valor de idioma invalido: " + this.idioma);
             }
         }
         entity.setDescripcion(this.descripcion);
+        entity.setObservaciones(this.observaciones);
         if (this.ubicacion != null) {
             try {
                 entity.setUbicacion(UbicacionJuego.valueOf(this.ubicacion));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum value
+                throw new IllegalArgumentException("Valor de ubicacion invalido: " + this.ubicacion);
             }
         }
         entity.setRecomendadoDosJugadores(this.recomendadoDosJugadores);

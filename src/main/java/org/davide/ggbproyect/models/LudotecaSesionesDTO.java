@@ -1,6 +1,9 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,18 +15,23 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LudotecaSesionesDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @NotNull
     private Integer idSesion;
 
+    @Min(0)
     private Integer numAdultos;
 
+    @Min(0)
     private Integer numNinos613;
 
+    @Min(0)
     private Integer numNinos05;
 
     @NotNull
+    @Positive
     private BigDecimal importeTotal;
 
     private Integer idComandaLudoteca;

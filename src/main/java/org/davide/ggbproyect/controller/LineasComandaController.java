@@ -1,17 +1,21 @@
 package org.davide.ggbproyect.controller;
 
 import jakarta.validation.Valid;
-import org.davide.ggbproyect.models.JuegoDTO;
 import org.davide.ggbproyect.models.LineasComandaDTO;
 import org.davide.ggbproyect.service.LineasComandaService;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/lineas-comanda")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
 public class LineasComandaController {
 
     private final LineasComandaService lineasComandaService;
@@ -21,38 +25,41 @@ public class LineasComandaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<LineasComandaDTO>> getAll() {
-        return ResponseEntity.ok(lineasComandaService.getAll());
+    public ResponseEntity<Page<LineasComandaDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(lineasComandaService.getAll(pageable));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<Page<LineasComandaDTO>> filter(
+            @RequestParam(required = false) Integer idComanda,
+            @RequestParam(required = false) Integer idProducto,
+            Pageable pageable) {
+        return ResponseEntity.ok(lineasComandaService.filter(idComanda, idProducto, pageable));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<LineasComandaDTO> getById(@PathVariable Integer id) {
-        return lineasComandaService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(lineasComandaService.getById(id));
     }
 
     @PostMapping
     public ResponseEntity<LineasComandaDTO> create(@Valid @RequestBody LineasComandaDTO lineasComandaDTO) {
-        return new ResponseEntity<>(lineasComandaService.create(lineasComandaDTO), HttpStatus.CREATED);
+        LineasComandaDTO created = lineasComandaService.create(lineasComandaDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<LineasComandaDTO> update(@PathVariable Integer id, @Valid @RequestBody LineasComandaDTO lineasComandaDTO) {
-        return lineasComandaService.update(id, lineasComandaDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(lineasComandaService.update(id, lineasComandaDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
-            if (lineasComandaService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        lineasComandaService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

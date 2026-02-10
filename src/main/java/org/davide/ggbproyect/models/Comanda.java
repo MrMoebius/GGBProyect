@@ -8,11 +8,13 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@Table(name = "comandas")
+@Table(name = "comandas", indexes = {
+    @Index(name = "idx_comanda_sesion", columnList = "id_sesion")
+})
 @Getter
 @Setter
 @ToString
@@ -23,6 +25,10 @@ public class Comanda {
     @Column(name = "id_comanda", nullable = false)
     private Integer id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_sesion", nullable = false)
@@ -30,7 +36,7 @@ public class Comanda {
     private SesionesMesa idSesion;
 
     @Column(name = "fecha_hora")
-    private LocalDateTime fechaHora;
+    private Instant fechaHora;
 
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'PENDIENTE'")

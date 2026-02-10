@@ -12,7 +12,9 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
-@Table(name = "empleados")
+@Table(name = "empleados", indexes = {
+    @Index(name = "idx_empleado_rol", columnList = "id_rol")
+})
 @Getter
 @Setter
 @ToString
@@ -23,6 +25,10 @@ public class Empleado {
     @Column(name = "id_empleado", nullable = false)
     private Integer id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Size(max = 100)
     @NotNull
     @Column(name = "nombre", nullable = false, length = 100)
@@ -30,7 +36,7 @@ public class Empleado {
 
     @Size(max = 150)
     @NotNull
-    @Column(name = "email", nullable = false, length = 150)
+    @Column(name = "email", nullable = false, length = 150, unique = true)
     private String email;
 
     @Size(max = 20)

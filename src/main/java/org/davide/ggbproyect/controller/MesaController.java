@@ -3,10 +3,14 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.MesaDTO;
 import org.davide.ggbproyect.service.MesaService;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -20,38 +24,50 @@ public class MesaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MesaDTO>> getAll() {
-        return ResponseEntity.ok(mesaService.getAll());
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
+    public ResponseEntity<Page<MesaDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(mesaService.getAll(pageable));
+    }
+
+    @GetMapping("/filter")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
+    public ResponseEntity<Page<MesaDTO>> filter(
+            @RequestParam(required = false) String nombreMesa,
+            @RequestParam(required = false) String zona,
+            @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Integer capacidad,
+            Pageable pageable) {
+        return ResponseEntity.ok(mesaService.filter(nombreMesa, zona, ubicacion, estado, capacidad, pageable));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<MesaDTO> getById(@PathVariable Integer id) {
-        return mesaService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(mesaService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MesaDTO> create(@Valid @RequestBody MesaDTO mesaDTO) {
-        return new ResponseEntity<>(mesaService.create(mesaDTO), HttpStatus.CREATED);
+        MesaDTO created = mesaService.create(mesaDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MesaDTO> update(@PathVariable Integer id, @Valid @RequestBody MesaDTO mesaDTO) {
-        return mesaService.update(id, mesaDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(mesaService.update(id, mesaDTO));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
-            if (mesaService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        mesaService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -6,17 +6,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.models.SesionesMesaDTO;
 import org.davide.ggbproyect.service.SesionesMesaService;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/sesiones-mesa")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
 public class SesionesMesaController {
 
     private final SesionesMesaService sesionesMesaService;
@@ -26,10 +30,8 @@ public class SesionesMesaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SesionesMesaDTO>> findAll()
-    {
-        return ResponseEntity.ok(sesionesMesaService.getAll());
-
+    public ResponseEntity<Page<SesionesMesaDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(sesionesMesaService.getAll(pageable));
     }
     @Operation(summary = "Buscar sesión de mesa por id")
     @ApiResponses({
@@ -47,32 +49,39 @@ public class SesionesMesaController {
             )
     })
 
-    @GetMapping("/{id}") ResponseEntity<SesionesMesaDTO>  findById(@PathVariable Integer id)
-    {
-        return sesionesMesaService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    @GetMapping("/filter")
+    public ResponseEntity<Page<SesionesMesaDTO>> filter(
+            @RequestParam(required = false) Integer idMesa,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Integer idReserva,
+            @RequestParam(required = false) Integer idEmpleadoApertura,
+            Pageable pageable) {
+        return ResponseEntity.ok(sesionesMesaService.filter(idMesa, estado, idReserva, idEmpleadoApertura, pageable));
     }
 
-    @PostMapping ResponseEntity<SesionesMesaDTO> create(@RequestBody SesionesMesaDTO sesionesMesaDTO)
-    {
-        return new ResponseEntity<>(sesionesMesaService.create(sesionesMesaDTO), HttpStatus.CREATED);
+    @GetMapping("/{id}")
+    public ResponseEntity<SesionesMesaDTO> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(sesionesMesaService.getById(id));
     }
 
-    @PutMapping("/{id}") ResponseEntity<SesionesMesaDTO> update (@PathVariable Integer id, @Valid  SesionesMesaDTO sesionesMesaDTO)
-    {
-        return sesionesMesaService.update(id,sesionesMesaDTO).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    @PostMapping
+    public ResponseEntity<SesionesMesaDTO> create(@Valid @RequestBody SesionesMesaDTO sesionesMesaDTO) {
+        SesionesMesaDTO created = sesionesMesaService.create(sesionesMesaDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SesionesMesaDTO> update(@PathVariable Integer id, @Valid @RequestBody SesionesMesaDTO sesionesMesaDTO) {
+        return ResponseEntity.ok(sesionesMesaService.update(id, sesionesMesaDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id)
-    {
-        try {
-            if (sesionesMesaService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        sesionesMesaService.delete(id);
+        return ResponseEntity.noContent().build();
     }
-
 }

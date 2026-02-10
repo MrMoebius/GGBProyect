@@ -23,6 +23,10 @@ public class Mesa {
     @Column(name = "id_mesa", nullable = false)
     private Integer id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @NotNull
     @Column(name = "numero_mesa", nullable = false, unique = true)
     private Integer numeroMesa;

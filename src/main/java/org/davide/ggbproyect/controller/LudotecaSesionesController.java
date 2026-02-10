@@ -1,17 +1,21 @@
 package org.davide.ggbproyect.controller;
 
 import jakarta.validation.Valid;
-import org.davide.ggbproyect.models.JuegoDTO;
 import org.davide.ggbproyect.models.LudotecaSesionesDTO;
 import org.davide.ggbproyect.service.LudotecaSesionesService;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/ludoteca-sesiones")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
 public class LudotecaSesionesController {
 
     private final LudotecaSesionesService ludotecaSesionesService;
@@ -21,38 +25,40 @@ public class LudotecaSesionesController {
     }
 
     @GetMapping
-    public ResponseEntity<List<LudotecaSesionesDTO>> getAll() {
-        return ResponseEntity.ok(ludotecaSesionesService.getAll());
+    public ResponseEntity<Page<LudotecaSesionesDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(ludotecaSesionesService.getAll(pageable));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<Page<LudotecaSesionesDTO>> filter(
+            @RequestParam(required = false) Integer idSesion,
+            Pageable pageable) {
+        return ResponseEntity.ok(ludotecaSesionesService.filter(idSesion, pageable));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<LudotecaSesionesDTO> getById(@PathVariable Integer id) {
-        return ludotecaSesionesService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(ludotecaSesionesService.getById(id));
     }
 
     @PostMapping
     public ResponseEntity<LudotecaSesionesDTO> create(@Valid @RequestBody LudotecaSesionesDTO ludotecaSesionesDTO) {
-        return new ResponseEntity<>(ludotecaSesionesService.create(ludotecaSesionesDTO), HttpStatus.CREATED);
+        LudotecaSesionesDTO created = ludotecaSesionesService.create(ludotecaSesionesDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<LudotecaSesionesDTO> update(@PathVariable Integer id, @Valid @RequestBody LudotecaSesionesDTO ludotecaSesionesDTO) {
-        return ludotecaSesionesService.update(id, ludotecaSesionesDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(ludotecaSesionesService.update(id, ludotecaSesionesDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
-            if (ludotecaSesionesService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        ludotecaSesionesService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

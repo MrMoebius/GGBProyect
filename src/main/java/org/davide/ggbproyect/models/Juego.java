@@ -18,11 +18,16 @@ import java.util.Objects;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class Juego {
+public class
+Juego {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_juego", nullable = false)
     private Integer id;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @Size(max = 150)
     @NotNull
@@ -50,9 +55,11 @@ public class Juego {
     @Column(name = "idioma", length = 50)
     private IdiomaJuego idioma;
 
-    @Lob
-    @Column(name = "descripcion")
+    @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(name = "observaciones", columnDefinition = "TEXT")
+    private String observaciones;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ubicacion", length = 100)

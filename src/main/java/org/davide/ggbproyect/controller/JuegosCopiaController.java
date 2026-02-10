@@ -1,13 +1,16 @@
 package org.davide.ggbproyect.controller;
 
 import jakarta.validation.Valid;
-import org.davide.ggbproyect.models.JuegoDTO;
 import org.davide.ggbproyect.models.JuegosCopiaDTO;
 import org.davide.ggbproyect.service.JuegosCopiaService;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -21,38 +24,47 @@ public class JuegosCopiaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<JuegosCopiaDTO>> getAll() {
-        return ResponseEntity.ok(juegosCopiaService.getAll());
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    public ResponseEntity<Page<JuegosCopiaDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(juegosCopiaService.getAll(pageable));
+    }
+
+    @GetMapping("/filter")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    public ResponseEntity<Page<JuegosCopiaDTO>> filter(
+            @RequestParam(required = false) Integer idJuego,
+            @RequestParam(required = false) String estado,
+            Pageable pageable) {
+        return ResponseEntity.ok(juegosCopiaService.filter(idJuego, estado, pageable));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<JuegosCopiaDTO> getById(@PathVariable Integer id) {
-        return juegosCopiaService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(juegosCopiaService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JuegosCopiaDTO> create(@Valid @RequestBody JuegosCopiaDTO juegosCopiaDTO) {
-        return new ResponseEntity<>(juegosCopiaService.create(juegosCopiaDTO), HttpStatus.CREATED);
+        JuegosCopiaDTO created = juegosCopiaService.create(juegosCopiaDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JuegosCopiaDTO> update(@PathVariable Integer id, @Valid @RequestBody JuegosCopiaDTO juegosCopiaDTO) {
-        return juegosCopiaService.update(id, juegosCopiaDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(juegosCopiaService.update(id, juegosCopiaDTO));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
-            if (juegosCopiaService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        juegosCopiaService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

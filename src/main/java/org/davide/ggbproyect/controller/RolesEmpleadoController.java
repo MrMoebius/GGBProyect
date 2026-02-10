@@ -3,14 +3,19 @@ package org.davide.ggbproyect.controller;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.RolesEmpleadoDTO;
 import org.davide.ggbproyect.service.RolesEmpleadoService;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/roles-empleado")
+@PreAuthorize("hasRole('ADMIN')")
 public class RolesEmpleadoController {
 
     private final RolesEmpleadoService rolesEmpleadoService;
@@ -20,38 +25,40 @@ public class RolesEmpleadoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RolesEmpleadoDTO>> getAll() {
-        return ResponseEntity.ok(rolesEmpleadoService.getAll());
+    public ResponseEntity<Page<RolesEmpleadoDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(rolesEmpleadoService.getAll(pageable));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<Page<RolesEmpleadoDTO>> filter(
+            @RequestParam(required = false) String nombreRol,
+            Pageable pageable) {
+        return ResponseEntity.ok(rolesEmpleadoService.filter(nombreRol, pageable));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<RolesEmpleadoDTO> getById(@PathVariable Integer id) {
-        return rolesEmpleadoService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(rolesEmpleadoService.getById(id));
     }
 
     @PostMapping
     public ResponseEntity<RolesEmpleadoDTO> create(@Valid @RequestBody RolesEmpleadoDTO rolesEmpleadoDTO) {
-        return new ResponseEntity<>(rolesEmpleadoService.create(rolesEmpleadoDTO), HttpStatus.CREATED);
+        RolesEmpleadoDTO created = rolesEmpleadoService.create(rolesEmpleadoDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<RolesEmpleadoDTO> update(@PathVariable Integer id, @Valid @RequestBody RolesEmpleadoDTO rolesEmpleadoDTO) {
-        return rolesEmpleadoService.update(id, rolesEmpleadoDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(rolesEmpleadoService.update(id, rolesEmpleadoDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        try {
-            if (rolesEmpleadoService.delete(id)) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        rolesEmpleadoService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

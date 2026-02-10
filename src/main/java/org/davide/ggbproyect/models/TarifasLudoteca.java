@@ -22,6 +22,10 @@ public class TarifasLudoteca {
     @Column(name = "id_tarifa", nullable = false)
     private Integer id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Size(max = 50)
     @NotNull
     @Column(name = "nombre_tramo", nullable = false, length = 50)

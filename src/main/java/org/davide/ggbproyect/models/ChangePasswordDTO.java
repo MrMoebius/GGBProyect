@@ -1,20 +1,23 @@
 package org.davide.ggbproyect.models;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class LoginDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChangePasswordDTO {
+
     @NotNull
     @NotBlank
-    @Email
-    private String email;
+    private String currentPassword;
 
     @NotNull
     @NotBlank
     @Size(min = 6, max = 100)
-    private String password;
+    private String newPassword;
 }

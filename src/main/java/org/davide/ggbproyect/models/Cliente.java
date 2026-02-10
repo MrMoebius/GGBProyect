@@ -21,13 +21,18 @@ public class Cliente {
     @Column(name = "id_cliente", nullable = false)
     private Integer id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Size(max = 150)
     @NotNull
     @Column(name = "nombre", nullable = false, length = 150)
     private String nombre;
 
     @Size(max = 150)
-    @Column(name = "email", length = 150)
+    @NotNull
+    @Column(name = "email", length = 150, unique = true, nullable = false)
     private String email;
 
     @Size(max = 20)
