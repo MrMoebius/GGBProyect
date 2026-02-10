@@ -33,11 +33,13 @@ public class LudotecaSesionesService {
         this.comandaRepository = comandaRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<LudotecaSesionesDTO> getAll(Pageable pageable) {
         return ludotecaSesionesRepository.findAll(pageable)
                 .map(LudotecaSesionesDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public LudotecaSesionesDTO getById(Integer id) {
         return ludotecaSesionesRepository.findById(id)
                 .map(LudotecaSesionesDTO::new)
@@ -83,6 +85,7 @@ public class LudotecaSesionesService {
         return new LudotecaSesionesDTO(ludotecaSesionesRepository.save(existingSesion));
     }
 
+    @Transactional(readOnly = true)
     public Page<LudotecaSesionesDTO> filter(Integer idSesion, Pageable pageable) {
         return ludotecaSesionesRepository.filter(idSesion, pageable)
                 .map(LudotecaSesionesDTO::new);

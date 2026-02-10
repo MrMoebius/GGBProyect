@@ -23,11 +23,13 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional(readOnly = true)
     public Page<ClienteDTO> getAll(Pageable pageable) {
         return clienteRepository.findAll(pageable)
                 .map(ClienteDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public ClienteDTO getById(Integer id) {
         return clienteRepository.findById(id)
                 .map(ClienteDTO::new)
@@ -35,6 +37,10 @@ public class ClienteService {
     }
 
     public ClienteDTO create(ClienteDTO clienteDTO) {
+        clienteRepository.findByEmail(clienteDTO.getEmail())
+                .ifPresent(c -> {
+                    throw new IllegalStateException("Ya existe un cliente con el email: " + clienteDTO.getEmail());
+                });
         Cliente cliente = clienteDTO.toEntity();
         if (clienteDTO.getPassword() != null) {
             cliente.setPassword(passwordEncoder.encode(clienteDTO.getPassword()));
@@ -45,6 +51,11 @@ public class ClienteService {
     public ClienteDTO update(Integer id, ClienteDTO clienteDTO) {
         Cliente existingCliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente con id " + id + " no encontrado"));
+        clienteRepository.findByEmail(clienteDTO.getEmail())
+                .filter(c -> !c.getId().equals(id))
+                .ifPresent(c -> {
+                    throw new IllegalStateException("Ya existe un cliente con el email: " + clienteDTO.getEmail());
+                });
         existingCliente.setNombre(clienteDTO.getNombre());
         existingCliente.setEmail(clienteDTO.getEmail());
         existingCliente.setTelefono(clienteDTO.getTelefono());
@@ -56,6 +67,7 @@ public class ClienteService {
         return new ClienteDTO(clienteRepository.save(existingCliente));
     }
 
+    @Transactional(readOnly = true)
     public Page<ClienteDTO> filter(String nombre, String email, String telefono, Pageable pageable) {
         return clienteRepository.filter(nombre, email, telefono, pageable)
                 .map(ClienteDTO::new);
