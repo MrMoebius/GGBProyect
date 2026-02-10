@@ -55,7 +55,7 @@ public class Empleado {
     private RolesEmpleado idRol;
 
     @Column(name = "fecha_ingreso")
-    private Instant fechaIngreso;
+    private LocalDate fechaIngreso;
 
     @PrePersist
     private void prePersist() {
