@@ -56,7 +56,7 @@ public class Empleado {
     private RolesEmpleado idRol;
 
     @Column(name = "fecha_ingreso")
-    private Instant fechaIngreso;
+    private LocalDate fechaIngreso;
 
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'ACTIVO'")
