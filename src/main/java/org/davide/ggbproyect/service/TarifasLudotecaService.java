@@ -23,11 +23,13 @@ public class TarifasLudotecaService {
         this.tarifasLudotecaRepository = tarifasLudotecaRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<TarifasLudotecaDTO> getAll(Pageable pageable) {
         return tarifasLudotecaRepository.findAll(pageable)
                 .map(TarifasLudotecaDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public TarifasLudotecaDTO getById(Integer id) {
         return tarifasLudotecaRepository.findById(id)
                 .map(TarifasLudotecaDTO::new)
@@ -51,6 +53,7 @@ public class TarifasLudotecaService {
         return new TarifasLudotecaDTO(tarifasLudotecaRepository.save(existingTarifa));
     }
 
+    @Transactional(readOnly = true)
     public Page<TarifasLudotecaDTO> filter(String nombreTramo, Boolean activo, Pageable pageable) {
         return tarifasLudotecaRepository.filter(nombreTramo, activo, pageable)
                 .map(TarifasLudotecaDTO::new);

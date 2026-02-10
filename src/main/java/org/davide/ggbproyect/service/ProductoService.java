@@ -23,11 +23,13 @@ public class ProductoService {
         this.productoRepository = productoRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductoDTO> getAll(Pageable pageable) {
         return productoRepository.findAll(pageable)
                 .map(ProductoDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public ProductoDTO getById(Integer id) {
         return productoRepository.findById(id)
                 .map(ProductoDTO::new)
@@ -50,6 +52,7 @@ public class ProductoService {
         return new ProductoDTO(productoRepository.save(existingProducto));
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductoDTO> filter(String nombre, String categoria, Boolean activo, Pageable pageable) {
         return productoRepository.filter(nombre, categoria, activo, pageable)
                 .map(ProductoDTO::new);
