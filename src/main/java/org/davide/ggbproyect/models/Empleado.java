@@ -57,6 +57,13 @@ public class Empleado {
     @Column(name = "fecha_ingreso")
     private LocalDate fechaIngreso;
 
+    @PrePersist
+    private void prePersist() {
+        if (this.fechaIngreso == null) {
+            this.fechaIngreso = LocalDate.now();
+        }
+    }
+
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'ACTIVO'")
     @Column(name = "estado", length = 50)
