@@ -46,6 +46,13 @@ public class Cliente {
     @Column(name = "fecha_alta")
     private LocalDate fechaAlta;
 
+    @PrePersist
+    private void prePersist() {
+        if (this.fechaAlta == null) {
+            this.fechaAlta = LocalDate.now();
+        }
+    }
+
     @Lob
     @Column(name = "notas")
     private String notas;
