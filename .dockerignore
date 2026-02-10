@@ -1,0 +1,28 @@
+# Build output
+target/
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+
+# Documentacion y scripts
+*.md
+db/
+scripts/
+
+# OS
+Thumbs.db
+.DS_Store
