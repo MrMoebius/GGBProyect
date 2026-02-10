@@ -1,6 +1,8 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,18 +16,26 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ClienteDTO {
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @NotNull
+    @NotBlank
     @Size(max = 150)
     private String nombre;
 
+    @NotNull
+    @NotBlank
     @Email
     @Size(max = 150)
     private String email;
 
     @Size(max = 20)
     private String telefono;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Size(min = 6, max = 100)
+    private String password;
 
     private LocalDate fechaAlta;
 

@@ -5,62 +5,80 @@ import org.davide.ggbproyect.models.ComandaDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
 import org.davide.ggbproyect.models.enums.EstadoComanda;
 import org.davide.ggbproyect.repository.ComandaRepository;
+import org.davide.ggbproyect.repository.SesionesMesaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class ComandaService {
 
     private final ComandaRepository comandaRepository;
+    private final SesionesMesaRepository sesionesMesaRepository;
 
-    public ComandaService(ComandaRepository comandaRepository) {
+    public ComandaService(ComandaRepository comandaRepository,
+                          SesionesMesaRepository sesionesMesaRepository) {
         this.comandaRepository = comandaRepository;
+        this.sesionesMesaRepository = sesionesMesaRepository;
     }
 
-    public List<ComandaDTO> getAll() {
-        return comandaRepository.findAll().stream()
-                .map(ComandaDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    public Optional<ComandaDTO> getById(Integer id) {
-        return comandaRepository.findById(id)
+    public Page<ComandaDTO> getAll(Pageable pageable) {
+        return comandaRepository.findAll(pageable)
                 .map(ComandaDTO::new);
+    }
+
+    public ComandaDTO getById(Integer id) {
+        return comandaRepository.findById(id)
+                .map(ComandaDTO::new)
+                .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + id + " no encontrada"));
     }
 
     public ComandaDTO create(ComandaDTO comandaDTO) {
         Comanda comanda = comandaDTO.toEntity();
+        if (comandaDTO.getIdSesion() != null) {
+            SesionesMesa sesion = sesionesMesaRepository.findById(comandaDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + comandaDTO.getIdSesion() + " no encontrada"));
+            comanda.setIdSesion(sesion);
+        }
         return new ComandaDTO(comandaRepository.save(comanda));
     }
 
-    public Optional<ComandaDTO> update(Integer id, ComandaDTO comandaDTO) {
-        return comandaRepository.findById(id).map(existingComanda -> {
-            if (comandaDTO.getIdSesion() != null) {
-                SesionesMesa sesion = new SesionesMesa();
-                sesion.setId(comandaDTO.getIdSesion());
-                existingComanda.setIdSesion(sesion);
+    public ComandaDTO update(Integer id, ComandaDTO comandaDTO) {
+        Comanda existingComanda = comandaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + id + " no encontrada"));
+        if (comandaDTO.getIdSesion() != null) {
+            SesionesMesa sesion = sesionesMesaRepository.findById(comandaDTO.getIdSesion())
+                    .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + comandaDTO.getIdSesion() + " no encontrada"));
+            existingComanda.setIdSesion(sesion);
+        }
+        existingComanda.setFechaHora(comandaDTO.getFechaHora());
+        if (comandaDTO.getEstado() != null) {
+            try {
+                existingComanda.setEstado(EstadoComanda.valueOf(comandaDTO.getEstado()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Valor de estado invalido: " + comandaDTO.getEstado());
             }
-            existingComanda.setFechaHora(comandaDTO.getFechaHora());
-            if (comandaDTO.getEstado() != null) {
-                try {
-                    existingComanda.setEstado(EstadoComanda.valueOf(comandaDTO.getEstado()));
-                } catch (IllegalArgumentException e) {
-                    // Handle invalid enum
-                }
-            }
-            existingComanda.setTotal(comandaDTO.getTotal());
-            return new ComandaDTO(comandaRepository.save(existingComanda));
-        });
+        }
+        existingComanda.setTotal(comandaDTO.getTotal());
+        return new ComandaDTO(comandaRepository.save(existingComanda));
     }
 
-    public boolean delete(Integer id) {
-        if (comandaRepository.existsById(id)) {
-            comandaRepository.deleteById(id);
-            return true;
+    public Page<ComandaDTO> filter(Integer idSesion, String estado, Pageable pageable) {
+        return comandaRepository.filter(idSesion, estado, pageable)
+                .map(ComandaDTO::new);
+    }
+
+    public void delete(Integer id) {
+        if (!comandaRepository.existsById(id)) {
+            throw new EntityNotFoundException("Comanda con id " + id + " no encontrada");
         }
-        return false;
+        comandaRepository.deleteById(id);
     }
 }

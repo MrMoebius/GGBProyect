@@ -1,27 +1,31 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoComanda;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ComandaDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @NotNull
     private Integer idSesion;
 
-    private LocalDateTime fechaHora;
+    private Instant fechaHora;
 
     @Size(max = 20)
+    @ValidEnum(enumClass = EstadoComanda.class, message = "Valor de estado invalido")
     private String estado;
 
     private BigDecimal total;
@@ -49,7 +53,7 @@ public class ComandaDTO {
             try {
                 entity.setEstado(EstadoComanda.valueOf(this.estado));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum
+                throw new IllegalArgumentException("Valor de estado invalido: " + this.estado);
             }
         }
         entity.setTotal(this.total);

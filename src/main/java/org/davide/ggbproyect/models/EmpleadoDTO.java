@@ -1,12 +1,15 @@
 package org.davide.ggbproyect.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoEmpleado;
+import org.davide.ggbproyect.validation.ValidEnum;
 
 import java.time.LocalDate;
 
@@ -14,21 +17,25 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmpleadoDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @Size(max = 100)
     @NotNull
+    @NotBlank
     private String nombre;
 
     @Size(max = 150)
     @NotNull
+    @NotBlank
     @Email
     private String email;
 
     @Size(max = 20)
     private String telefono;
 
-    // Password excluded
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
 
     @NotNull
     private Integer idRol;
@@ -36,6 +43,7 @@ public class EmpleadoDTO {
     private LocalDate fechaIngreso;
 
     @Size(max = 50)
+    @ValidEnum(enumClass = EstadoEmpleado.class, message = "Valor de estado invalido")
     private String estado;
 
     public EmpleadoDTO(Empleado entity) {
@@ -66,7 +74,7 @@ public class EmpleadoDTO {
             try {
                 entity.setEstado(EstadoEmpleado.valueOf(this.estado));
             } catch (IllegalArgumentException e) {
-                // Handle invalid enum
+                throw new IllegalArgumentException("Valor de estado invalido: " + this.estado);
             }
         }
         return entity;
