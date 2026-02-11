@@ -29,11 +29,13 @@ public class PeticionesPagoService {
         this.sesionesMesaRepository = sesionesMesaRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<PeticionesPagoDTO> getAll(Pageable pageable) {
         return peticionesPagoRepository.findAll(pageable)
                 .map(PeticionesPagoDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public PeticionesPagoDTO getById(Integer id) {
         return peticionesPagoRepository.findById(id)
                 .map(PeticionesPagoDTO::new)
@@ -70,6 +72,7 @@ public class PeticionesPagoService {
         return new PeticionesPagoDTO(peticionesPagoRepository.save(existingPeticion));
     }
 
+    @Transactional(readOnly = true)
     public Page<PeticionesPagoDTO> filter(Integer idSesion, String metodoPreferido, Boolean atendida, Pageable pageable) {
         return peticionesPagoRepository.filter(idSesion, metodoPreferido, atendida, pageable)
                 .map(PeticionesPagoDTO::new);

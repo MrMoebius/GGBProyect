@@ -29,11 +29,13 @@ public class JuegosCopiaService {
         this.juegoRepository = juegoRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<JuegosCopiaDTO> getAll(Pageable pageable) {
         return juegosCopiaRepository.findAll(pageable)
                 .map(JuegosCopiaDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public JuegosCopiaDTO getById(Integer id) {
         return juegosCopiaRepository.findById(id)
                 .map(JuegosCopiaDTO::new)
@@ -69,6 +71,7 @@ public class JuegosCopiaService {
         return new JuegosCopiaDTO(juegosCopiaRepository.save(existingCopia));
     }
 
+    @Transactional(readOnly = true)
     public Page<JuegosCopiaDTO> filter(Integer idJuego, String estado, Pageable pageable) {
         return juegosCopiaRepository.filter(idJuego, estado, pageable)
                 .map(JuegosCopiaDTO::new);

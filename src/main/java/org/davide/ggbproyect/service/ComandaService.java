@@ -29,11 +29,13 @@ public class ComandaService {
         this.sesionesMesaRepository = sesionesMesaRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<ComandaDTO> getAll(Pageable pageable) {
         return comandaRepository.findAll(pageable)
                 .map(ComandaDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public ComandaDTO getById(Integer id) {
         return comandaRepository.findById(id)
                 .map(ComandaDTO::new)
@@ -70,6 +72,7 @@ public class ComandaService {
         return new ComandaDTO(comandaRepository.save(existingComanda));
     }
 
+    @Transactional(readOnly = true)
     public Page<ComandaDTO> filter(Integer idSesion, String estado, Pageable pageable) {
         return comandaRepository.filter(idSesion, estado, pageable)
                 .map(ComandaDTO::new);

@@ -33,11 +33,13 @@ public class LineasComandaService {
         this.productoRepository = productoRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<LineasComandaDTO> getAll(Pageable pageable) {
         return lineasComandaRepository.findAll(pageable)
                 .map(LineasComandaDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public LineasComandaDTO getById(Integer id) {
         return lineasComandaRepository.findById(id)
                 .map(LineasComandaDTO::new)
@@ -79,6 +81,7 @@ public class LineasComandaService {
         return new LineasComandaDTO(lineasComandaRepository.save(existingLinea));
     }
 
+    @Transactional(readOnly = true)
     public Page<LineasComandaDTO> filter(Integer idComanda, Integer idProducto, Pageable pageable) {
         return lineasComandaRepository.filter(idComanda, idProducto, pageable)
                 .map(LineasComandaDTO::new);

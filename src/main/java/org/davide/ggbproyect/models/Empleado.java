@@ -8,6 +8,7 @@ import org.davide.ggbproyect.models.enums.EstadoEmpleado;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -55,7 +56,7 @@ public class Empleado {
     private RolesEmpleado idRol;
 
     @Column(name = "fecha_ingreso")
-    private LocalDate fechaIngreso;
+    private Instant fechaIngreso;
 
     @PrePersist
     private void prePersist() {

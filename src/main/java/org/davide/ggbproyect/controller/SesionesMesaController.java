@@ -1,5 +1,10 @@
 package org.davide.ggbproyect.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.SesionesMesaDTO;
 import org.davide.ggbproyect.service.SesionesMesaService;
@@ -28,6 +33,21 @@ public class SesionesMesaController {
     public ResponseEntity<Page<SesionesMesaDTO>> getAll(Pageable pageable) {
         return ResponseEntity.ok(sesionesMesaService.getAll(pageable));
     }
+    @Operation(summary = "Buscar sesión de mesa por id")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Sesión encontrada",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SesionesMesaDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Sesión no encontrada"
+            )
+    })
 
     @GetMapping("/filter")
     public ResponseEntity<Page<SesionesMesaDTO>> filter(

@@ -26,11 +26,13 @@ public class JuegoService {
         this.juegoRepository = juegoRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<JuegoDTO> getAll(Pageable pageable) {
         return juegoRepository.findAll(pageable)
                 .map(JuegoDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public JuegoDTO getById(Integer id) {
         return juegoRepository.findById(id)
                 .map(JuegoDTO::new)
@@ -78,6 +80,7 @@ public class JuegoService {
         return new JuegoDTO(juegoRepository.save(existingJuego));
     }
 
+    @Transactional(readOnly = true)
     public Page<JuegoDTO> filter(String nombre, String complejidad, String idioma,
                                  String ubicacion, Boolean activo, Boolean recomendadoDosJugadores, Pageable pageable) {
         return juegoRepository.filter(nombre, complejidad, idioma, ubicacion, activo, recomendadoDosJugadores, pageable)
