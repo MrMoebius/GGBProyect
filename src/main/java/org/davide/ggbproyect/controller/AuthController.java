@@ -2,7 +2,9 @@ package org.davide.ggbproyect.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.models.LoginDto;
+import org.davide.ggbproyect.models.RegistroDTO;
 import org.davide.ggbproyect.security.JwtTokenProvider;
 import org.davide.ggbproyect.security.LoginRateLimiter;
 import org.davide.ggbproyect.service.ClienteService;
@@ -35,6 +37,22 @@ public class AuthController {
         this.jwtTokenProvider = jwtTokenProvider;
         this.loginRateLimiter = loginRateLimiter;
         this.clienteService = clienteService;
+    }
+
+    /**
+     * Endpoint público de registro para clientes desde el frontend de Angular.
+     * Cualquier persona puede crear una cuenta sin necesitar autenticación.
+     * Se envía un email de verificación tras el registro.
+     */
+    @PostMapping("/registro")
+    public ResponseEntity<Map<String, String>> registro(@Valid @RequestBody RegistroDTO registroDTO) {
+        // Reutilizamos la lógica de creación de ClienteService (validación, token, email)
+        ClienteDTO clienteDTO = registroDTO.toClienteDTO();
+        clienteService.create(clienteDTO);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Cuenta creada correctamente. Se ha enviado un email de verificación a " + registroDTO.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
