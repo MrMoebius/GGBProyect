@@ -40,8 +40,9 @@ public class EmailService {
      * @param token        token UUID de verificación
      */
     public void enviarEmailVerificacion(String destinatario, String nombre, String token) {
-        // Construir el enlace de verificación con el token
-        String enlace = baseUrl + "/api/auth/verificar-email?token=" + token;
+        // Construir el enlace que apunta al frontend de Angular (no al backend)
+        // El frontend mostrará el formulario de contraseña y luego llamará al backend
+        String enlace = baseUrl + "/auth/verificar-email?token=" + token;
         String asunto = "Verifica tu cuenta - GGBProyect";
 
         // Plantilla HTML del email de verificación (me lo ha hecho chati)
