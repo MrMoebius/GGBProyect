@@ -144,9 +144,10 @@ public class ClienteService {
 
     /**
      * Verifica el email de un cliente usando el token recibido por correo.
-     * Esto comprueba que el token sea válido y no haya expirado.
+     * Además establece la contraseña que el cliente elige en ese momento.
+     * Comprueba que el token sea válido y no haya expirado.
      */
-    public void verificarEmail(String token) {
+    public void verificarEmail(String token, String password) {
         Cliente cliente = clienteRepository.findByTokenVerificacion(token)
                 .orElseThrow(() -> new IllegalArgumentException("Token de verificación inválido"));
 
@@ -159,8 +160,9 @@ public class ClienteService {
             throw new IllegalStateException("El token de verificación ha expirado. Solicita uno nuevo.");
         }
 
-        // Marcar como verificado y limpiar el token usado
+        // Marcar como verificado, establecer contraseña y limpiar el token usado
         cliente.setEmailVerificado(true);
+        cliente.setPassword(passwordEncoder.encode(password));
         cliente.setTokenVerificacion(null);
         cliente.setTokenVerificacionExpira(null);
         clienteRepository.save(cliente);

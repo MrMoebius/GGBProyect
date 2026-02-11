@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * DTO específico para el registro público de clientes desde el frontend.
- * Solo contiene los campos obligatorios para crear una cuenta.
+ * Solo pide nombre y email. La contraseña se establece al verificar el email.
  */
 @Data
 @NoArgsConstructor
@@ -29,20 +29,14 @@ public class RegistroDTO {
     @Size(max = 150)
     private String email;
 
-    // La contraseña es obligatoria en el registro (mínimo 6 caracteres)
-    @NotNull
-    @NotBlank
-    @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")
-    private String password;
-
     /**
      * Convierte este DTO de registro a un ClienteDTO para reutilizar la lógica de creación.
+     * No incluye password porque se establece después, al verificar el email.
      */
     public ClienteDTO toClienteDTO() {
         ClienteDTO dto = new ClienteDTO();
         dto.setNombre(this.nombre);
         dto.setEmail(this.email);
-        dto.setPassword(this.password);
         return dto;
     }
 }

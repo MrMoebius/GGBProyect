@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.models.LoginDto;
 import org.davide.ggbproyect.models.RegistroDTO;
+import org.davide.ggbproyect.models.VerificacionDTO;
 import org.davide.ggbproyect.security.JwtTokenProvider;
 import org.davide.ggbproyect.security.LoginRateLimiter;
 import org.davide.ggbproyect.service.ClienteService;
@@ -97,15 +98,15 @@ public class AuthController {
     }
 
     /**
-     * Endpoint para verificar el email de un cliente.
-     * El cliente recibe un enlace por correo con el token y accede aquí para confirmar.
-     * Es público (no requiere autenticación) porque el cliente aún no puede hacer login.
+     * Endpoint para verificar el email y establecer la contraseña del cliente.
+     * El frontend recoge el token de la URL y pide al usuario que elija su contraseña.
+     * Ahora es POST porque recibe token + password en el body.
      */
-    @GetMapping("/verificar-email")
-    public ResponseEntity<Map<String, String>> verificarEmail(@RequestParam String token) {
-        clienteService.verificarEmail(token);
+    @PostMapping("/verificar-email")
+    public ResponseEntity<Map<String, String>> verificarEmail(@Valid @RequestBody VerificacionDTO verificacionDTO) {
+        clienteService.verificarEmail(verificacionDTO.getToken(), verificacionDTO.getPassword());
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Email verificado correctamente. Ya puede iniciar sesión.");
+        response.put("message", "Email verificado y contraseña establecida correctamente. Ya puede iniciar sesión.");
         return ResponseEntity.ok(response);
     }
 
