@@ -10,7 +10,7 @@ import lombok.Data;
 public class LoginDto {
     @NotNull
     @NotBlank
-    @Email
+    @Email(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "El email debe tener un formato válido")
     private String email;
 
     @NotNull

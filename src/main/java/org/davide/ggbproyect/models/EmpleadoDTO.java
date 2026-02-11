@@ -28,7 +28,7 @@ public class EmpleadoDTO {
     @Size(max = 150)
     @NotNull
     @NotBlank
-    @Email
+    @Email(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "El email debe tener un formato válido")
     private String email;
 
     @Size(max = 20)
