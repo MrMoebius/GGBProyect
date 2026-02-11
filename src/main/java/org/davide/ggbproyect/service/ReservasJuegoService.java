@@ -33,11 +33,13 @@ public class ReservasJuegoService {
         this.juegosCopiaRepository = juegosCopiaRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<ReservasJuegoDTO> getAll(Pageable pageable) {
         return reservasJuegoRepository.findAll(pageable)
                 .map(ReservasJuegoDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public ReservasJuegoDTO getById(Integer id) {
         return reservasJuegoRepository.findById(id)
                 .map(ReservasJuegoDTO::new)
@@ -78,6 +80,7 @@ public class ReservasJuegoService {
         return new ReservasJuegoDTO(reservasJuegoRepository.save(existingReserva));
     }
 
+    @Transactional(readOnly = true)
     public Page<ReservasJuegoDTO> filter(Integer idSesion, Integer idCopia, String estado, Pageable pageable) {
         return reservasJuegoRepository.filter(idSesion, idCopia, estado, pageable)
                 .map(ReservasJuegoDTO::new);

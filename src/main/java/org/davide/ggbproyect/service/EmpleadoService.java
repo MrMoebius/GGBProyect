@@ -33,11 +33,13 @@ public class EmpleadoService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional(readOnly = true)
     public Page<EmpleadoDTO> getAll(Pageable pageable) {
         return empleadoRepository.findAll(pageable)
                 .map(EmpleadoDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public EmpleadoDTO getById(Integer id) {
         return empleadoRepository.findById(id)
                 .map(EmpleadoDTO::new)
@@ -45,6 +47,10 @@ public class EmpleadoService {
     }
 
     public EmpleadoDTO create(EmpleadoDTO empleadoDTO) {
+        empleadoRepository.findByEmail(empleadoDTO.getEmail())
+                .ifPresent(e -> {
+                    throw new IllegalStateException("Ya existe un empleado con el email: " + empleadoDTO.getEmail());
+                });
         Empleado empleado = empleadoDTO.toEntity();
         if (empleadoDTO.getIdRol() != null) {
             RolesEmpleado rol = rolesEmpleadoRepository.findById(empleadoDTO.getIdRol())
@@ -60,6 +66,11 @@ public class EmpleadoService {
     public EmpleadoDTO update(Integer id, EmpleadoDTO empleadoDTO) {
         Empleado existingEmpleado = empleadoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empleado con id " + id + " no encontrado"));
+        empleadoRepository.findByEmail(empleadoDTO.getEmail())
+                .filter(e -> !e.getId().equals(id))
+                .ifPresent(e -> {
+                    throw new IllegalStateException("Ya existe un empleado con el email: " + empleadoDTO.getEmail());
+                });
         existingEmpleado.setNombre(empleadoDTO.getNombre());
         existingEmpleado.setEmail(empleadoDTO.getEmail());
         existingEmpleado.setTelefono(empleadoDTO.getTelefono());
@@ -82,6 +93,7 @@ public class EmpleadoService {
         return new EmpleadoDTO(empleadoRepository.save(existingEmpleado));
     }
 
+    @Transactional(readOnly = true)
     public Page<EmpleadoDTO> filter(String nombre, String email, Integer idRol, String estado, Pageable pageable) {
         return empleadoRepository.filter(nombre, email, idRol, estado, pageable)
                 .map(EmpleadoDTO::new);

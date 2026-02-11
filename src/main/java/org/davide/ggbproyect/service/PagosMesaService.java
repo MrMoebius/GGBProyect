@@ -30,11 +30,13 @@ public class PagosMesaService {
         this.sesionesMesaRepository = sesionesMesaRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<PagosMesaDTO> getAll(Pageable pageable) {
         return pagosMesaRepository.findAll(pageable)
                 .map(PagosMesaDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public PagosMesaDTO getById(Integer id) {
         return pagosMesaRepository.findById(id)
                 .map(PagosMesaDTO::new)
@@ -78,6 +80,7 @@ public class PagosMesaService {
         return new PagosMesaDTO(pagosMesaRepository.save(existingPago));
     }
 
+    @Transactional(readOnly = true)
     public Page<PagosMesaDTO> filter(Integer idSesion, String metodoPago, String estado, Pageable pageable) {
         return pagosMesaRepository.filter(idSesion, metodoPago, estado, pageable)
                 .map(PagosMesaDTO::new);

@@ -26,11 +26,13 @@ public class MesaService {
         this.mesaRepository = mesaRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<MesaDTO> getAll(Pageable pageable) {
         return mesaRepository.findAll(pageable)
                 .map(MesaDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public MesaDTO getById(Integer id) {
         return mesaRepository.findById(id)
                 .map(MesaDTO::new)
@@ -82,6 +84,7 @@ public class MesaService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Page<MesaDTO> filter(String nombreMesa, String zona, String ubicacion,
                                 String estado, Integer capacidad, Pageable pageable) {
         return mesaRepository.filter(nombreMesa, zona, ubicacion, estado, capacidad, pageable)

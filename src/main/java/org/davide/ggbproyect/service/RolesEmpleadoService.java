@@ -26,11 +26,13 @@ public class RolesEmpleadoService {
         this.empleadoRepository = empleadoRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<RolesEmpleadoDTO> getAll(Pageable pageable) {
         return rolesEmpleadoRepository.findAll(pageable)
                 .map(RolesEmpleadoDTO::new);
     }
 
+    @Transactional(readOnly = true)
     public RolesEmpleadoDTO getById(Integer id) {
         return rolesEmpleadoRepository.findById(id)
                 .map(RolesEmpleadoDTO::new)
@@ -49,6 +51,7 @@ public class RolesEmpleadoService {
         return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(existingRol));
     }
 
+    @Transactional(readOnly = true)
     public Page<RolesEmpleadoDTO> filter(String nombreRol, Pageable pageable) {
         return rolesEmpleadoRepository.filter(nombreRol, pageable)
                 .map(RolesEmpleadoDTO::new);
