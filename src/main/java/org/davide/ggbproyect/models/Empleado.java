@@ -9,7 +9,6 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
@@ -61,7 +60,7 @@ public class Empleado {
     @PrePersist
     private void prePersist() {
         if (this.fechaIngreso == null) {
-            this.fechaIngreso = LocalDate.now();
+            this.fechaIngreso = Instant.now();
         }
     }
 
