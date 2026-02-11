@@ -26,7 +26,7 @@ public class ClienteDTO {
 
     @NotNull
     @NotBlank
-    @Email
+    @Email(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "El email debe tener un formato válido")
     @Size(max = 150)
     private String email;
 
