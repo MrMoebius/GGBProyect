@@ -42,6 +42,10 @@ public class ClienteDTO {
 
     private String notas;
 
+    // Estado de verificación del email (solo lectura, no se puede setear desde la API)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Boolean emailVerificado;
+
     public ClienteDTO(Cliente entity) {
         this.id = entity.getId();
         this.nombre = entity.getNombre();
@@ -49,6 +53,7 @@ public class ClienteDTO {
         this.telefono = entity.getTelefono();
         this.fechaAlta = entity.getFechaAlta();
         this.notas = entity.getNotas();
+        this.emailVerificado = entity.getEmailVerificado(); //nueva linea pa la verification
     }
 
     public Cliente toEntity() {

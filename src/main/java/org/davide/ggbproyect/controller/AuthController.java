@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.davide.ggbproyect.models.LoginDto;
 import org.davide.ggbproyect.security.JwtTokenProvider;
 import org.davide.ggbproyect.security.LoginRateLimiter;
+import org.davide.ggbproyect.service.ClienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,10 +13,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,13 +25,16 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final LoginRateLimiter loginRateLimiter;
+    private final ClienteService clienteService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtTokenProvider jwtTokenProvider,
-                          LoginRateLimiter loginRateLimiter) {
+                          LoginRateLimiter loginRateLimiter,
+                          ClienteService clienteService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.loginRateLimiter = loginRateLimiter;
+        this.clienteService = clienteService;
     }
 
     @PostMapping("/login")
@@ -75,5 +76,31 @@ public class AuthController {
             loginRateLimiter.registerFailedAttempt(ip);
             throw e;
         }
+    }
+
+    /**
+     * Endpoint para verificar el email de un cliente.
+     * El cliente recibe un enlace por correo con el token y accede aquí para confirmar.
+     * Es público (no requiere autenticación) porque el cliente aún no puede hacer login.
+     */
+    @GetMapping("/verificar-email")
+    public ResponseEntity<Map<String, String>> verificarEmail(@RequestParam String token) {
+        clienteService.verificarEmail(token);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Email verificado correctamente. Ya puede iniciar sesión.");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Endpoint para reenviar el email de verificación.
+     * Útil si el primer email no llegó o el token expiró.
+     * Es público porque el cliente no verificado no puede hacer login.
+     */
+    @PostMapping("/reenviar-verificacion")
+    public ResponseEntity<Map<String, String>> reenviarVerificacion(@RequestParam String email) {
+        clienteService.reenviarVerificacion(email);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Se ha enviado un nuevo email de verificación.");
+        return ResponseEntity.ok(response);
     }
 }
