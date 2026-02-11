@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoEmpleado;
 import org.davide.ggbproyect.validation.ValidEnum;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
@@ -40,7 +40,7 @@ public class EmpleadoDTO {
     @NotNull
     private Integer idRol;
 
-    private LocalDate fechaIngreso;
+    private Instant fechaIngreso;
 
     @Size(max = 50)
     @ValidEnum(enumClass = EstadoEmpleado.class, message = "Valor de estado invalido")
