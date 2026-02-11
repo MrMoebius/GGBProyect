@@ -1,6 +1,7 @@
 package org.davide.ggbproyect.controller;
 
 import jakarta.validation.Valid;
+import org.davide.ggbproyect.models.LayoutDTO;
 import org.davide.ggbproyect.models.MesaDTO;
 import org.davide.ggbproyect.service.MesaService;
 import org.springframework.data.domain.Page;
@@ -62,6 +63,13 @@ public class MesaController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MesaDTO> update(@PathVariable Integer id, @Valid @RequestBody MesaDTO mesaDTO) {
         return ResponseEntity.ok(mesaService.update(id, mesaDTO));
+    }
+
+    @PutMapping("/layout")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateLayout(@RequestBody List<LayoutDTO> layouts) {
+        mesaService.updateLayout(layouts);
+        return ResponseEntity.ok(java.util.Map.of("message", "Layout actualizado correctamente"));
     }
 
     @DeleteMapping("/{id}")

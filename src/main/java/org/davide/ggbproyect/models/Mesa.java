@@ -52,6 +52,18 @@ public class Mesa {
     @Column(name = "estado", length = 20)
     private EstadoMesa estado;
 
+    @Column(name = "pos_x")
+    private Double posX;
+
+    @Column(name = "pos_y")
+    private Double posY;
+
+    @Column(name = "forma", length = 20)
+    private String forma;
+
+    @Column(name = "rotacion")
+    private Integer rotacion;
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
