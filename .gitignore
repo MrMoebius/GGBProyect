@@ -35,5 +35,9 @@ build/
 ### Environment variables ###
 .env
 
+### Uploaded files (mantener imagenes de juegos en git) ###
+uploads/*
+!uploads/games/
+
 ### Windows reserved names ###
 nul

@@ -1,5 +1,6 @@
 package org.davide.ggbproyect.service;
 
+import org.davide.ggbproyect.models.LayoutDTO;
 import org.davide.ggbproyect.models.Mesa;
 import org.davide.ggbproyect.models.MesaDTO;
 import org.davide.ggbproyect.models.enums.EstadoMesa;
@@ -64,7 +65,23 @@ public class MesaService {
                 throw new IllegalArgumentException("Valor de estado invalido: " + mesaDTO.getEstado());
             }
         }
+        existingMesa.setPosX(mesaDTO.getPosX());
+        existingMesa.setPosY(mesaDTO.getPosY());
+        existingMesa.setForma(mesaDTO.getForma());
+        existingMesa.setRotacion(mesaDTO.getRotacion());
         return new MesaDTO(mesaRepository.save(existingMesa));
+    }
+
+    public void updateLayout(List<LayoutDTO> layouts) {
+        for (LayoutDTO layout : layouts) {
+            Mesa mesa = mesaRepository.findById(layout.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Mesa con id " + layout.getId() + " no encontrada"));
+            mesa.setPosX(layout.getPosX());
+            mesa.setPosY(layout.getPosY());
+            mesa.setForma(layout.getForma());
+            mesa.setRotacion(layout.getRotacion());
+            mesaRepository.save(mesa);
+        }
     }
 
     @Transactional(readOnly = true)

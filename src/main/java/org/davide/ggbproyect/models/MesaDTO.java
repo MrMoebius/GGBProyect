@@ -42,6 +42,14 @@ public class MesaDTO {
     @ValidEnum(enumClass = EstadoMesa.class, message = "Valor de estado invalido")
     private String estado;
 
+    private Double posX;
+    private Double posY;
+
+    @Size(max = 20)
+    private String forma;
+
+    private Integer rotacion;
+
     public MesaDTO(Mesa entity) {
         this.id = entity.getId();
         this.numeroMesa = entity.getNumeroMesa();
@@ -50,6 +58,10 @@ public class MesaDTO {
         this.zona = entity.getZona();
         this.ubicacion = entity.getUbicacion() != null ? entity.getUbicacion().name() : null;
         this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
+        this.posX = entity.getPosX();
+        this.posY = entity.getPosY();
+        this.forma = entity.getForma();
+        this.rotacion = entity.getRotacion();
     }
 
     public Mesa toEntity() {
@@ -73,6 +85,10 @@ public class MesaDTO {
                 throw new IllegalArgumentException("Valor de estado invalido: " + this.estado);
             }
         }
+        entity.setPosX(this.posX);
+        entity.setPosY(this.posY);
+        entity.setForma(this.forma);
+        entity.setRotacion(this.rotacion);
         return entity;
     }
 }

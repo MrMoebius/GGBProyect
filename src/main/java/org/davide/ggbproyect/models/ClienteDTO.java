@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,7 +31,7 @@ public class ClienteDTO {
     @Size(max = 150)
     private String email;
 
-    @Size(max = 20)
+    @Pattern(regexp = "^(\\+\\d{1,3})?\\d{1,9}$", message = "El teléfono debe tener máximo 9 dígitos con prefijo internacional opcional (ej: +34612345678)")
     private String telefono;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -41,6 +42,10 @@ public class ClienteDTO {
 
     private String notas;
 
+    // Estado de verificación del email (solo lectura, no se puede setear desde la API)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Boolean emailVerificado;
+
     public ClienteDTO(Cliente entity) {
         this.id = entity.getId();
         this.nombre = entity.getNombre();
@@ -48,6 +53,7 @@ public class ClienteDTO {
         this.telefono = entity.getTelefono();
         this.fechaAlta = entity.getFechaAlta();
         this.notas = entity.getNotas();
+        this.emailVerificado = entity.getEmailVerificado(); //nueva linea pa la verification
     }
 
     public Cliente toEntity() {
