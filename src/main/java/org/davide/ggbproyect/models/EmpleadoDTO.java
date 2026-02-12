@@ -37,6 +37,7 @@ public class EmpleadoDTO {
     private String telefono;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Size(min = 6, max = 100, message = "El campo debe contener minimo 6 caracteres")
     private String password;
 
     @NotNull
