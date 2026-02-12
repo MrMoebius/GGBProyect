@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -51,11 +52,26 @@ public class Cliente {
         if (this.fechaAlta == null) {
             this.fechaAlta = LocalDate.now();
         }
+        // Por defecto, un cliente nuevo no tiene el email verificado
+        if (this.emailVerificado == null) {
+            this.emailVerificado = false;
+        }
     }
 
     @Lob
     @Column(name = "notas")
     private String notas;
+
+    // Campos creados pa verificación de email del cliente (hasta las column de token)
+    @Column(name = "email_verificado", nullable = false)
+    private Boolean emailVerificado = false;
+
+    @Size(max = 36)
+    @Column(name = "token_verificacion", length = 36)
+    private String tokenVerificacion;
+
+    @Column(name = "token_verificacion_expira")
+    private LocalDateTime tokenVerificacionExpira;
 
     @Override
     public final boolean equals(Object o) {

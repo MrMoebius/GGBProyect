@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -90,6 +91,18 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.FORBIDDEN.value());
         body.put("error", "Acceso denegado");
         body.put("message", "No tiene permisos para realizar esta operacion");
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    // Handler para cuando un cliente intenta login sin haber verificado su email
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<Map<String, Object>> handleDisabled(DisabledException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", Instant.now());
+        body.put("status", HttpStatus.FORBIDDEN.value());
+        body.put("error", "Cuenta no verificada");
+        body.put("message", "Debe verificar su email antes de iniciar sesión. Revise su correo o solicite un nuevo enlace de verificación.");
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
