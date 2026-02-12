@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.davide.ggbproyect.models.enums.EstadoEmpleado;
 import org.davide.ggbproyect.validation.ValidEnum;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Data
@@ -31,7 +33,7 @@ public class EmpleadoDTO {
     @Email(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "El email debe tener un formato válido")
     private String email;
 
-    @Size(max = 20)
+    @Pattern(regexp = "^(\\+\\d{1,3})?\\d{1,9}$", message = "El teléfono debe tener máximo 9 dígitos con prefijo internacional opcional (ej: +34612345678)")
     private String telefono;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

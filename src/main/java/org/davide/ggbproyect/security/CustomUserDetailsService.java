@@ -46,8 +46,19 @@ public class CustomUserDetailsService implements UserDetailsService {
         // If not employee, try client
         Optional<Cliente> cliente = clienteRepository.findByEmail(email);
         if (cliente.isPresent()) {
+            Cliente c = cliente.get();
             Set<GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_CLIENTE"));
-            return new User(cliente.get().getEmail(), cliente.get().getPassword(), authorities);
+            // Si el email no está verificado, el usuario queda deshabilitado (enabled=false)
+            // Spring Security lanzará DisabledException automáticamente al intentar login
+            return new User(
+                    c.getEmail(),
+                    c.getPassword(),
+                    Boolean.TRUE.equals(c.getEmailVerificado()), // enabled: solo si email verificado
+                    true,  // accountNonExpired
+                    true,  // credentialsNonExpired
+                    true,  // accountNonLocked
+                    authorities
+            );
         }
 
         throw new UsernameNotFoundException("User not found with email: " + email);
