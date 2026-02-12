@@ -29,6 +29,7 @@ public class ReservasMesaDTO {
     private Instant fechaHoraFin;
 
     @Min(1)
+    @NotNull
     private Integer numPersonas;
 
     private Integer idJuegoDeseado;
