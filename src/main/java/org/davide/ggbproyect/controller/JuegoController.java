@@ -54,13 +54,11 @@ public class JuegoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<Page<JuegoDTO>> getAll(Pageable pageable) {
         return ResponseEntity.ok(juegoService.getAll(pageable));
     }
 
     @GetMapping("/filter")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<Page<JuegoDTO>> filter(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String complejidad,
@@ -73,7 +71,6 @@ public class JuegoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<JuegoDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(juegoService.getById(id));
     }
