@@ -24,13 +24,11 @@ public class ProductoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<Page<ProductoDTO>> getAll(Pageable pageable) {
         return ResponseEntity.ok(productoService.getAll(pageable));
     }
 
     @GetMapping("/filter")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<Page<ProductoDTO>> filter(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String categoria,
@@ -40,7 +38,6 @@ public class ProductoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<ProductoDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(productoService.getById(id));
     }
