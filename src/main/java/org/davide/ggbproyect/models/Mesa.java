@@ -33,7 +33,7 @@ public class Mesa {
 
     @Size(max = 50)
     @NotNull
-    @Column(name = "nombre_mesa", nullable = false, length = 50)
+    @Column(name = "nombre_mesa", nullable = false, length = 50,unique = true)
     private String nombreMesa;
 
     @Column(name = "capacidad", nullable = false)

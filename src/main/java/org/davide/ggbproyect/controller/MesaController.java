@@ -67,7 +67,7 @@ public class MesaController {
 
     @PutMapping("/layout")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateLayout(@RequestBody List<LayoutDTO> layouts) {
+    public ResponseEntity<?> updateLayout(@Valid @RequestBody List<LayoutDTO> layouts) {
         mesaService.updateLayout(layouts);
         return ResponseEntity.ok(java.util.Map.of("message", "Layout actualizado correctamente"));
     }
