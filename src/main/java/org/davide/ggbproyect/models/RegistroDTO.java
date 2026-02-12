@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * DTO específico para el registro público de clientes desde el frontend.
- * Solo pide nombre y email. La contraseña se establece al verificar el email.
+ * Pide nombre, email y teléfono. La contraseña se establece al verificar el email.
  */
 @Data
 @NoArgsConstructor
@@ -29,6 +29,10 @@ public class RegistroDTO {
     @Size(max = 150)
     private String email;
 
+    /** Teléfono de contacto del cliente */
+    @Size(max = 20)
+    private String telefono;
+
     /**
      * Convierte este DTO de registro a un ClienteDTO para reutilizar la lógica de creación.
      * No incluye password porque se establece después, al verificar el email.
@@ -37,6 +41,7 @@ public class RegistroDTO {
         ClienteDTO dto = new ClienteDTO();
         dto.setNombre(this.nombre);
         dto.setEmail(this.email);
+        dto.setTelefono(this.telefono);
         return dto;
     }
 }
