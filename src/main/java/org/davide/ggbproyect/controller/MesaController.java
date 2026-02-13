@@ -49,7 +49,7 @@ public class MesaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<MesaDTO> create(@Valid @RequestBody MesaDTO mesaDTO) {
         MesaDTO created = mesaService.create(mesaDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -60,20 +60,20 @@ public class MesaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<MesaDTO> update(@PathVariable Integer id, @Valid @RequestBody MesaDTO mesaDTO) {
         return ResponseEntity.ok(mesaService.update(id, mesaDTO));
     }
 
     @PutMapping("/layout")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> updateLayout(@Valid @RequestBody List<LayoutDTO> layouts) {
         mesaService.updateLayout(layouts);
         return ResponseEntity.ok(java.util.Map.of("message", "Layout actualizado correctamente"));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         mesaService.delete(id);
         return ResponseEntity.noContent().build();
