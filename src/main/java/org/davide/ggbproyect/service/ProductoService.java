@@ -38,6 +38,13 @@ public class ProductoService {
 
     public ProductoDTO create(ProductoDTO productoDTO) {
         Producto producto = productoDTO.toEntity();
+        List<Producto> listProducto= productoRepository.findAll();
+
+        for (Producto producto1 : listProducto) {
+            if (producto1.getNombre().equals(productoDTO.getNombre())) {
+                throw new IllegalArgumentException("El nombre del producto esta duplicado ");
+            }
+        }
         return new ProductoDTO(productoRepository.save(producto));
     }
 
@@ -49,6 +56,17 @@ public class ProductoService {
         existingProducto.setCategoria(productoDTO.getCategoria());
         existingProducto.setPrecio(productoDTO.getPrecio());
         existingProducto.setActivo(productoDTO.getActivo());
+
+        List<Producto> listProducto = productoRepository.findAll();
+
+        for (Producto producto1 : listProducto) {
+            if (producto1.getNombre().equals(productoDTO.getNombre()) && !producto1.getId().equals(id)) {
+                throw new IllegalArgumentException("El nombre del Producto esta duplicado ");
+            }
+        }
+
+
+
         return new ProductoDTO(productoRepository.save(existingProducto));
     }
 

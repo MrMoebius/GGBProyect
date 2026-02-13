@@ -41,6 +41,19 @@ public class JuegoService {
 
     public JuegoDTO create(JuegoDTO juegoDTO) {
         Juego juego = juegoDTO.toEntity();
+        List<Juego> listjuego = juegoRepository.findAll();
+
+        if (juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
+            throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
+        }
+
+        for (Juego juego1 : listjuego)
+        {
+            if (juego1.getNombre().equals(juegoDTO.getNombre())) {
+                throw new IllegalArgumentException("El nombre del juego esta duplicado ");
+            }
+
+        }
         return new JuegoDTO(juegoRepository.save(juego));
     }
 
@@ -51,6 +64,18 @@ public class JuegoService {
         existingJuego.setMinJugadores(juegoDTO.getMinJugadores());
         existingJuego.setMaxJugadores(juegoDTO.getMaxJugadores());
         existingJuego.setDuracionMediaMin(juegoDTO.getDuracionMediaMin());
+        List<Juego> listjuego = juegoRepository.findAll();
+
+        for (Juego juego1 : listjuego) {
+            if (juego1.getNombre().equals(juegoDTO.getNombre()) && !juego1.getId().equals(id)) {
+                throw new IllegalArgumentException("El nombre del juego esta duplicado ");
+            }
+        }
+
+        if (juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
+            throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
+        }
+
         if (juegoDTO.getComplejidad() != null) {
             try {
                 existingJuego.setComplejidad(ComplejidadJuego.valueOf(juegoDTO.getComplejidad()));

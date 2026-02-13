@@ -40,6 +40,7 @@ public class ClienteDTO {
 
     private LocalDate fechaAlta;
 
+    @Size(min = 1, max = 250)
     private String notas;
 
     // Estado de verificación del email (solo lectura, no se puede setear desde la API)

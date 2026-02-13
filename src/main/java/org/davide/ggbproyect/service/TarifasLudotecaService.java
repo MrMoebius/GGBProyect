@@ -38,6 +38,11 @@ public class TarifasLudotecaService {
 
     public TarifasLudotecaDTO create(TarifasLudotecaDTO tarifasLudotecaDTO) {
         TarifasLudoteca tarifasLudoteca = tarifasLudotecaDTO.toEntity();
+        if (tarifasLudotecaDTO.getEdadMin()>tarifasLudotecaDTO.getEdadMax())
+        {
+            throw new IllegalArgumentException("La edad minima no puede ser mayor que la maxima ");
+        }
+
         return new TarifasLudotecaDTO(tarifasLudotecaRepository.save(tarifasLudoteca));
     }
 
@@ -50,6 +55,12 @@ public class TarifasLudotecaService {
         existingTarifa.setPrecio(tarifasLudotecaDTO.getPrecio());
         existingTarifa.setActivo(tarifasLudotecaDTO.getActivo());
         existingTarifa.setDescripcion(tarifasLudotecaDTO.getDescripcion());
+
+        if (tarifasLudotecaDTO.getEdadMin()>tarifasLudotecaDTO.getEdadMax())
+        {
+            throw new IllegalArgumentException("La edad minima no puede ser mayor que la maxima ");
+        }
+
         return new TarifasLudotecaDTO(tarifasLudotecaRepository.save(existingTarifa));
     }
 
