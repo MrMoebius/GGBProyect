@@ -54,6 +54,11 @@ public class ReservasMesaService {
 
     public ReservasMesaDTO create(ReservasMesaDTO reservasMesaDTO) {
         ReservasMesa reservasMesa = reservasMesaDTO.toEntity();
+
+        if (reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin()))
+        {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser despues que la de final");
+        }
         if (reservasMesaDTO.getIdCliente() != null) {
             Cliente cliente = clienteRepository.findById(reservasMesaDTO.getIdCliente())
                     .orElseThrow(() -> new EntityNotFoundException("Cliente con id " + reservasMesaDTO.getIdCliente() + " no encontrado"));
@@ -107,6 +112,11 @@ public class ReservasMesaService {
             }
         }
         existingReserva.setNotas(reservasMesaDTO.getNotas());
+
+        if (reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser despues que la de final");
+        }
+
         return new ReservasMesaDTO(reservasMesaRepository.save(existingReserva));
     }
 

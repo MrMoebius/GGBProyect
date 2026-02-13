@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChangePasswordDTO {
+public class ChangePasswordDTO
+{
 
     @NotNull
     @NotBlank

@@ -23,6 +23,7 @@ public class ProductoDTO {
     @NotBlank
     private String nombre;
 
+    @Size(min = 1, max = 250)
     private String descripcion;
 
     @Size(max = 50)

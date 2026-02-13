@@ -38,6 +38,7 @@ public class ReservasMesaDTO {
     @ValidEnum(enumClass = EstadoReserva.class, message = "Valor de estado invalido")
     private String estado;
 
+    @Size(min = 1, max = 250)
     private String notas;
 
     public ReservasMesaDTO(ReservasMesa entity) {
