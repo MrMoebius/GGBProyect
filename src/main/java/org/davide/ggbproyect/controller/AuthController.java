@@ -6,6 +6,7 @@ import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.models.LoginDto;
 import org.davide.ggbproyect.models.RegistroDTO;
 import org.davide.ggbproyect.models.VerificacionDTO;
+import org.davide.ggbproyect.repository.ClienteRepository;
 import org.davide.ggbproyect.security.JwtTokenProvider;
 import org.davide.ggbproyect.security.LoginRateLimiter;
 import org.davide.ggbproyect.service.ClienteService;
@@ -29,15 +30,18 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final LoginRateLimiter loginRateLimiter;
     private final ClienteService clienteService;
+    private final ClienteRepository clienteRepository;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtTokenProvider jwtTokenProvider,
                           LoginRateLimiter loginRateLimiter,
-                          ClienteService clienteService) {
+                          ClienteService clienteService,
+                          ClienteRepository clienteRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.loginRateLimiter = loginRateLimiter;
         this.clienteService = clienteService;
+        this.clienteRepository = clienteRepository;
     }
 
     /**
@@ -88,6 +92,13 @@ public class AuthController {
             response.put("tokenType", "Bearer");
             response.put("role", role);
             response.put("email", authentication.getName());
+
+            // Incluir id y nombre del cliente si existe
+            clienteRepository.findByEmail(authentication.getName())
+                    .ifPresent(cliente -> {
+                        response.put("nombre", cliente.getNombre());
+                        response.put("clienteId", cliente.getId());
+                    });
 
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
