@@ -57,7 +57,7 @@ public class PeticionesPagoController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<PeticionesPagoDTO> update(@PathVariable Integer id, @Valid @RequestBody PeticionesPagoDTO peticionesPagoDTO) {
         return ResponseEntity.ok(peticionesPagoService.update(id, peticionesPagoDTO));
     }
