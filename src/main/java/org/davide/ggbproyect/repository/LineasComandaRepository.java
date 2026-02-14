@@ -24,4 +24,6 @@ public interface LineasComandaRepository extends JpaRepository<LineasComanda, In
     Page<LineasComanda> filter(@Param("idComanda") Integer idComanda,
                                @Param("idProducto") Integer idProducto,
                                Pageable pageable);
+
+    List<LineasComanda> findByIdComandaId(Integer idComanda);
 }

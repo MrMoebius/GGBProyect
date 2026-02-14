@@ -7,11 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/comandas")
@@ -55,6 +55,36 @@ public class ComandaController {
     @PutMapping("/{id}")
     public ResponseEntity<ComandaDTO> update(@PathVariable Integer id, @Valid @RequestBody ComandaDTO comandaDTO) {
         return ResponseEntity.ok(comandaService.update(id, comandaDTO));
+    }
+
+    @PostMapping("/cliente")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<ComandaDTO> createByCliente(@Valid @RequestBody ComandaDTO comandaDTO, Authentication auth) {
+        ComandaDTO created = comandaService.createByCliente(comandaDTO, auth.getName());
+        return ResponseEntity.created(
+                ServletUriComponentsBuilder.fromCurrentRequest()
+                        .path("/{id}").buildAndExpand(created.getId()).toUri()
+        ).body(created);
+    }
+
+    @PostMapping("/{id}/confirmar")
+    public ResponseEntity<ComandaDTO> confirmar(@PathVariable Integer id) {
+        return ResponseEntity.ok(comandaService.confirmar(id));
+    }
+
+    @PostMapping("/{id}/preparar")
+    public ResponseEntity<ComandaDTO> preparar(@PathVariable Integer id) {
+        return ResponseEntity.ok(comandaService.preparar(id));
+    }
+
+    @PostMapping("/{id}/servir")
+    public ResponseEntity<ComandaDTO> servir(@PathVariable Integer id) {
+        return ResponseEntity.ok(comandaService.servir(id));
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<ComandaDTO> cancelar(@PathVariable Integer id) {
+        return ResponseEntity.ok(comandaService.cancelar(id));
     }
 
     @DeleteMapping("/{id}")

@@ -79,6 +79,23 @@ public class SesionesMesaController {
         return ResponseEntity.ok(sesionesMesaService.update(id, sesionesMesaDTO));
     }
 
+    @PostMapping("/abrir")
+    @Operation(summary = "Abrir sesion de mesa con cascadas automaticas")
+    public ResponseEntity<SesionesMesaDTO> abrir(@Valid @RequestBody SesionesMesaDTO sesionesMesaDTO) {
+        SesionesMesaDTO created = sesionesMesaService.abrir(sesionesMesaDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
+    }
+
+    @PostMapping("/{id}/cerrar")
+    @Operation(summary = "Cerrar sesion de mesa con cascadas automaticas")
+    public ResponseEntity<SesionesMesaDTO> cerrar(@PathVariable Integer id) {
+        return ResponseEntity.ok(sesionesMesaService.cerrar(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         sesionesMesaService.delete(id);

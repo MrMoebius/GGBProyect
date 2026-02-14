@@ -7,6 +7,9 @@ import org.davide.ggbproyect.models.ReservasMesa;
 import org.davide.ggbproyect.models.ReservasMesaDTO;
 import org.davide.ggbproyect.models.enums.EstadoReserva;
 import org.davide.ggbproyect.repository.ClienteRepository;
+
+import java.util.Map;
+import java.util.Set;
 import org.davide.ggbproyect.repository.JuegoRepository;
 import org.davide.ggbproyect.repository.MesaRepository;
 import org.davide.ggbproyect.repository.ReservasMesaRepository;
@@ -28,6 +31,14 @@ public class ReservasMesaService {
     private final ClienteRepository clienteRepository;
     private final MesaRepository mesaRepository;
     private final JuegoRepository juegoRepository;
+
+    private static final Map<EstadoReserva, Set<EstadoReserva>> TRANSICIONES_RESERVA = Map.of(
+        EstadoReserva.PENDIENTE, Set.of(EstadoReserva.CONFIRMADA, EstadoReserva.CANCELADA),
+        EstadoReserva.CONFIRMADA, Set.of(EstadoReserva.COMPLETADA, EstadoReserva.NO_PRESENTADO, EstadoReserva.CANCELADA),
+        EstadoReserva.COMPLETADA, Set.of(),
+        EstadoReserva.CANCELADA, Set.of(),
+        EstadoReserva.NO_PRESENTADO, Set.of()
+    );
 
     public ReservasMesaService(ReservasMesaRepository reservasMesaRepository,
                                ClienteRepository clienteRepository,
@@ -106,9 +117,11 @@ public class ReservasMesaService {
         }
         if (reservasMesaDTO.getEstado() != null) {
             try {
-                existingReserva.setEstado(EstadoReserva.valueOf(reservasMesaDTO.getEstado()));
+                EstadoReserva nuevoEstado = EstadoReserva.valueOf(reservasMesaDTO.getEstado());
+                validateTransicionReserva(existingReserva.getEstado(), nuevoEstado);
+                existingReserva.setEstado(nuevoEstado);
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Valor de estado invalido: " + reservasMesaDTO.getEstado());
+                throw new IllegalArgumentException(e.getMessage());
             }
         }
         existingReserva.setNotas(reservasMesaDTO.getNotas());
@@ -125,6 +138,15 @@ public class ReservasMesaService {
                                         Integer idJuegoDeseado, String estado, Pageable pageable) {
         return reservasMesaRepository.filter(idCliente, idMesa, idJuegoDeseado, estado, pageable)
                 .map(ReservasMesaDTO::new);
+    }
+
+    private void validateTransicionReserva(EstadoReserva actual, EstadoReserva nuevo) {
+        if (actual == nuevo) return;
+        Set<EstadoReserva> permitidos = TRANSICIONES_RESERVA.get(actual);
+        if (permitidos == null || !permitidos.contains(nuevo)) {
+            throw new IllegalStateException(
+                "Transicion de estado no permitida: " + actual + " -> " + nuevo);
+        }
     }
 
     public void delete(Integer id) {
