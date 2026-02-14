@@ -37,6 +37,9 @@ public class ProductoDTO {
 
     private Boolean activo;
 
+    @NotNull
+    private Integer tipoIva;
+
     public ProductoDTO(Producto entity) {
         this.id = entity.getId();
         this.nombre = entity.getNombre();
@@ -44,6 +47,7 @@ public class ProductoDTO {
         this.categoria = entity.getCategoria();
         this.precio = entity.getPrecio();
         this.activo = entity.getActivo();
+        this.tipoIva = entity.getTipoIva();
     }
 
     public Producto toEntity() {
@@ -54,6 +58,7 @@ public class ProductoDTO {
         entity.setCategoria(this.categoria);
         entity.setPrecio(this.precio);
         entity.setActivo(this.activo);
+        entity.setTipoIva(this.tipoIva);
         return entity;
     }
 }

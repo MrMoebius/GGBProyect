@@ -26,4 +26,6 @@ public interface PagosMesaRepository extends JpaRepository<PagosMesa, Integer> {
                            @Param("metodoPago") String metodoPago,
                            @Param("estado") String estado,
                            Pageable pageable);
+
+    List<PagosMesa> findByIdSesionId(Integer idSesion);
 }

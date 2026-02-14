@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -58,7 +58,9 @@ public class LineasComandaService {
                     .orElseThrow(() -> new EntityNotFoundException("Producto con id " + lineasComandaDTO.getIdProducto() + " no encontrado"));
             lineasComanda.setIdProducto(producto);
         }
-        return new LineasComandaDTO(lineasComandaRepository.save(lineasComanda));
+        LineasComandaDTO saved = new LineasComandaDTO(lineasComandaRepository.save(lineasComanda));
+        recalcularTotalComanda(lineasComanda.getIdComanda().getId());
+        return saved;
     }
 
     public LineasComandaDTO update(Integer id, LineasComandaDTO lineasComandaDTO) {
@@ -78,7 +80,9 @@ public class LineasComandaService {
         existingLinea.setPrecioUnitarioHistorico(lineasComandaDTO.getPrecioUnitarioHistorico());
         existingLinea.setEstadoPreparacion(lineasComandaDTO.getEstadoPreparacion());
         existingLinea.setNotasChef(lineasComandaDTO.getNotasChef());
-        return new LineasComandaDTO(lineasComandaRepository.save(existingLinea));
+        LineasComandaDTO saved = new LineasComandaDTO(lineasComandaRepository.save(existingLinea));
+        recalcularTotalComanda(existingLinea.getIdComanda().getId());
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -88,9 +92,21 @@ public class LineasComandaService {
     }
 
     public void delete(Integer id) {
-        if (!lineasComandaRepository.existsById(id)) {
-            throw new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada");
-        }
+        LineasComanda linea = lineasComandaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada"));
+        Integer idComanda = linea.getIdComanda().getId();
         lineasComandaRepository.deleteById(id);
+        recalcularTotalComanda(idComanda);
+    }
+
+    private void recalcularTotalComanda(Integer idComanda) {
+        Comanda comanda = comandaRepository.findById(idComanda)
+                .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + idComanda + " no encontrada"));
+        List<LineasComanda> lineas = lineasComandaRepository.findByIdComandaId(idComanda);
+        BigDecimal total = lineas.stream()
+                .map(l -> l.getPrecioUnitarioHistorico().multiply(BigDecimal.valueOf(l.getCantidad())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        comanda.setTotal(total);
+        comandaRepository.save(comanda);
     }
 }

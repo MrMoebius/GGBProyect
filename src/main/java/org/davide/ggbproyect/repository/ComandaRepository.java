@@ -24,4 +24,6 @@ public interface ComandaRepository extends JpaRepository<Comanda, Integer> {
     Page<Comanda> filter(@Param("idSesion") Integer idSesion,
                          @Param("estado") String estado,
                          Pageable pageable);
+
+    List<Comanda> findByIdSesionId(Integer idSesion);
 }
