@@ -6,6 +6,9 @@ import org.davide.ggbproyect.models.MesaDTO;
 import org.davide.ggbproyect.models.enums.EstadoMesa;
 import org.davide.ggbproyect.models.enums.UbicacionJuego;
 import org.davide.ggbproyect.repository.MesaRepository;
+
+import java.util.Map;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,13 @@ import java.util.stream.Collectors;
 public class MesaService {
 
     private final MesaRepository mesaRepository;
+
+    private static final Map<EstadoMesa, Set<EstadoMesa>> TRANSICIONES_MESA = Map.of(
+        EstadoMesa.LIBRE, Set.of(EstadoMesa.OCUPADA, EstadoMesa.RESERVADA, EstadoMesa.MANTENIMIENTO),
+        EstadoMesa.RESERVADA, Set.of(EstadoMesa.OCUPADA, EstadoMesa.MANTENIMIENTO, EstadoMesa.LIBRE),
+        EstadoMesa.OCUPADA, Set.of(EstadoMesa.LIBRE, EstadoMesa.MANTENIMIENTO),
+        EstadoMesa.MANTENIMIENTO, Set.of(EstadoMesa.LIBRE)
+    );
 
     public MesaService(MesaRepository mesaRepository) {
         this.mesaRepository = mesaRepository;
@@ -79,9 +89,11 @@ public class MesaService {
         }
         if (mesaDTO.getEstado() != null) {
             try {
-                existingMesa.setEstado(EstadoMesa.valueOf(mesaDTO.getEstado()));
+                EstadoMesa nuevoEstado = EstadoMesa.valueOf(mesaDTO.getEstado());
+                validateTransicionMesa(existingMesa.getEstado(), nuevoEstado);
+                existingMesa.setEstado(nuevoEstado);
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Valor de estado invalido: " + mesaDTO.getEstado());
+                throw new IllegalArgumentException(e.getMessage());
             }
         }
         existingMesa.setPosX(mesaDTO.getPosX());
@@ -108,6 +120,15 @@ public class MesaService {
                                 String estado, Integer capacidad, Pageable pageable) {
         return mesaRepository.filter(nombreMesa, zona, ubicacion, estado, capacidad, pageable)
                 .map(MesaDTO::new);
+    }
+
+    private void validateTransicionMesa(EstadoMesa actual, EstadoMesa nuevo) {
+        if (actual == nuevo) return;
+        Set<EstadoMesa> permitidos = TRANSICIONES_MESA.get(actual);
+        if (permitidos == null || !permitidos.contains(nuevo)) {
+            throw new IllegalStateException(
+                "Transicion de estado no permitida: " + actual + " -> " + nuevo);
+        }
     }
 
     public void delete(Integer id) {

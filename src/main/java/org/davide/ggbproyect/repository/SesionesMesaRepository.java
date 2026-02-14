@@ -15,10 +15,10 @@ import java.util.List;
 public interface SesionesMesaRepository extends JpaRepository<SesionesMesa, Integer> {
 
     @Override
-    @EntityGraph(attributePaths = {"idMesa", "idReserva", "idEmpleadoApertura"})
+    @EntityGraph(attributePaths = {"idMesa", "idReserva", "idEmpleadoApertura", "idCliente"})
     Page<SesionesMesa> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM SesionesMesa e LEFT JOIN FETCH e.idMesa LEFT JOIN FETCH e.idReserva LEFT JOIN FETCH e.idEmpleadoApertura WHERE " +
+    @Query("SELECT e FROM SesionesMesa e LEFT JOIN FETCH e.idMesa LEFT JOIN FETCH e.idReserva LEFT JOIN FETCH e.idEmpleadoApertura LEFT JOIN FETCH e.idCliente WHERE " +
            "(:idMesa IS NULL OR e.idMesa.id = :idMesa) AND " +
            "(:estado IS NULL OR str(e.estado) = :estado) AND " +
            "(:idReserva IS NULL OR e.idReserva.id = :idReserva) AND " +

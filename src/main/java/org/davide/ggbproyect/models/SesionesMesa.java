@@ -16,7 +16,8 @@ import java.util.Objects;
 @Table(name = "sesiones_mesa", indexes = {
     @Index(name = "idx_sesion_mesa", columnList = "id_mesa"),
     @Index(name = "idx_sesion_reserva", columnList = "id_reserva"),
-    @Index(name = "idx_sesion_empleado", columnList = "id_empleado_apertura")
+    @Index(name = "idx_sesion_empleado", columnList = "id_empleado_apertura"),
+    @Index(name = "idx_sesion_cliente", columnList = "id_cliente")
 })
 @Getter
 @Setter
@@ -51,6 +52,18 @@ public class SesionesMesa {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "id_cliente")
+    private Cliente idCliente;
+
+    @Column(name = "num_comensales")
+    private Integer numComensales;
+
+    @ColumnDefault("0")
+    @Column(name = "usa_ludoteca", nullable = false)
+    private Boolean usaLudoteca;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "id_reserva")
     private ReservasMesa idReserva;
 
@@ -73,6 +86,9 @@ public class SesionesMesa {
         }
         if (estado == null) {
             estado = EstadoSesion.ACTIVA;
+        }
+        if (usaLudoteca == null) {
+            usaLudoteca = false;
         }
     }
 

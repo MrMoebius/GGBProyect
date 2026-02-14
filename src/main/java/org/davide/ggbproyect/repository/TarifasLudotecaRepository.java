@@ -19,4 +19,6 @@ public interface TarifasLudotecaRepository extends JpaRepository<TarifasLudoteca
     Page<TarifasLudoteca> filter(@Param("nombreTramo") String nombreTramo,
                                  @Param("activo") Boolean activo,
                                  Pageable pageable);
+
+    List<TarifasLudoteca> findByActivoTrue();
 }

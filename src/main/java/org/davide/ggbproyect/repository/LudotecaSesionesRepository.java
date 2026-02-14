@@ -22,4 +22,6 @@ public interface LudotecaSesionesRepository extends JpaRepository<LudotecaSesion
            "(:idSesion IS NULL OR e.idSesion.id = :idSesion)")
     Page<LudotecaSesiones> filter(@Param("idSesion") Integer idSesion,
                                    Pageable pageable);
+
+    java.util.Optional<LudotecaSesiones> findByIdSesionId(Integer idSesion);
 }

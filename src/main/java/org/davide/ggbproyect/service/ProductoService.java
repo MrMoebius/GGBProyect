@@ -56,6 +56,7 @@ public class ProductoService {
         existingProducto.setCategoria(productoDTO.getCategoria());
         existingProducto.setPrecio(productoDTO.getPrecio());
         existingProducto.setActivo(productoDTO.getActivo());
+        existingProducto.setTipoIva(productoDTO.getTipoIva());
 
         List<Producto> listProducto = productoRepository.findAll();
 
