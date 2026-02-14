@@ -44,6 +44,11 @@ public class Producto {
     @Column(name = "precio", nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
+    @NotNull
+    @ColumnDefault("21")
+    @Column(name = "tipo_iva", nullable = false)
+    private Integer tipoIva;
+
     @ColumnDefault("1")
     @Column(name = "activo")
     private Boolean activo;

@@ -24,6 +24,12 @@ public class SesionesMesaDTO {
 
     private Integer idEmpleadoApertura; // opcional
 
+    private Integer idCliente; // opcional
+
+    private Integer numComensales;
+
+    private Boolean usaLudoteca;
+
     private Instant inicio;
 
     private Instant fin;
@@ -40,6 +46,9 @@ public class SesionesMesaDTO {
         this.idMesa = entity.getIdMesa() != null ? entity.getIdMesa().getId() : null;
         this.idReserva = entity.getIdReserva() != null ? entity.getIdReserva().getId() : null;
         this.idEmpleadoApertura = entity.getIdEmpleadoApertura() != null ? entity.getIdEmpleadoApertura().getId() : null;
+        this.idCliente = entity.getIdCliente() != null ? entity.getIdCliente().getId() : null;
+        this.numComensales = entity.getNumComensales();
+        this.usaLudoteca = entity.getUsaLudoteca();
         this.inicio = entity.getInicio();
         this.fin = entity.getFin();
         this.estado = entity.getEstado() != null ? entity.getEstado().name() : null;
@@ -68,7 +77,15 @@ public class SesionesMesaDTO {
             empleado.setId(this.idEmpleadoApertura);
             entity.setIdEmpleadoApertura(empleado);
         }
-        
+
+        if (this.idCliente != null) {
+            Cliente cliente = new Cliente();
+            cliente.setId(this.idCliente);
+            entity.setIdCliente(cliente);
+        }
+
+        entity.setNumComensales(this.numComensales);
+        entity.setUsaLudoteca(this.usaLudoteca);
         entity.setInicio(this.inicio);
         entity.setFin(this.fin);
         if (this.estado != null) {
