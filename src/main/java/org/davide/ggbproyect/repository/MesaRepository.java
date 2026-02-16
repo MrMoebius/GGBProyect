@@ -25,4 +25,12 @@ public interface MesaRepository extends JpaRepository<Mesa, Integer> {
                       @Param("estado") String estado,
                       @Param("capacidad") Integer capacidad,
                       Pageable pageable);
+
+    boolean existsByNombreMesa(String nombreMesa);
+
+    boolean existsByNombreMesaAndIdNot(String nombreMesa, Integer id);
+
+    boolean existsByNumeroMesa(Integer numeroMesa);
+
+    boolean existsByNumeroMesaAndIdNot(Integer numeroMesa, Integer id);
 }

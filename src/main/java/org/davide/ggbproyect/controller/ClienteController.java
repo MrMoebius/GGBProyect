@@ -95,7 +95,22 @@ public class ClienteController {
     @PutMapping("/{id}/password")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<Void> changePassword(@PathVariable Integer id,
-                                                @Valid @RequestBody ChangePasswordDTO dto) {
+                                                @Valid @RequestBody ChangePasswordDTO dto,
+                                                org.springframework.security.core.Authentication authentication) {
+        String currentUserEmail = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isEmpleado = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLEADO"));
+
+        if (!isAdmin && !isEmpleado) {
+            ClienteDTO cliente = clienteService.getById(id);
+            if (!cliente.getEmail().equals(currentUserEmail)) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "No tiene permisos para cambiar la contraseña de otro usuario");
+            }
+        }
+
         clienteService.changePassword(id, dto.getCurrentPassword(), dto.getNewPassword());
         return ResponseEntity.noContent().build();
     }

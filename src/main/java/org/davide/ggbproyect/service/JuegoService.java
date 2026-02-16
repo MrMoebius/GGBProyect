@@ -40,41 +40,32 @@ public class JuegoService {
     }
 
     public JuegoDTO create(JuegoDTO juegoDTO) {
-        Juego juego = juegoDTO.toEntity();
-        List<Juego> listjuego = juegoRepository.findAll();
-
         if (juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
             throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
         }
-
-        for (Juego juego1 : listjuego)
-        {
-            if (juego1.getNombre().equals(juegoDTO.getNombre())) {
-                throw new IllegalArgumentException("El nombre del juego esta duplicado ");
-            }
-
+        if (juegoRepository.existsByNombre(juegoDTO.getNombre())) {
+            throw new IllegalArgumentException("El nombre del juego esta duplicado ");
         }
+
+        Juego juego = juegoDTO.toEntity();
         return new JuegoDTO(juegoRepository.save(juego));
     }
 
     public JuegoDTO update(Integer id, JuegoDTO juegoDTO) {
         Juego existingJuego = juegoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Juego con id " + id + " no encontrado"));
-        existingJuego.setNombre(juegoDTO.getNombre());
-        existingJuego.setMinJugadores(juegoDTO.getMinJugadores());
-        existingJuego.setMaxJugadores(juegoDTO.getMaxJugadores());
-        existingJuego.setDuracionMediaMin(juegoDTO.getDuracionMediaMin());
-        List<Juego> listjuego = juegoRepository.findAll();
-
-        for (Juego juego1 : listjuego) {
-            if (juego1.getNombre().equals(juegoDTO.getNombre()) && !juego1.getId().equals(id)) {
-                throw new IllegalArgumentException("El nombre del juego esta duplicado ");
-            }
-        }
 
         if (juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
             throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
         }
+        if (juegoRepository.existsByNombreAndIdNot(juegoDTO.getNombre(), id)) {
+            throw new IllegalArgumentException("El nombre del juego esta duplicado ");
+        }
+
+        existingJuego.setNombre(juegoDTO.getNombre());
+        existingJuego.setMinJugadores(juegoDTO.getMinJugadores());
+        existingJuego.setMaxJugadores(juegoDTO.getMaxJugadores());
+        existingJuego.setDuracionMediaMin(juegoDTO.getDuracionMediaMin());
 
         if (juegoDTO.getComplejidad() != null) {
             try {

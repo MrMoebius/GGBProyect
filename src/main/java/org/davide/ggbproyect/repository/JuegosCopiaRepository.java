@@ -18,7 +18,8 @@ public interface JuegosCopiaRepository extends JpaRepository<JuegosCopia, Intege
     @EntityGraph(attributePaths = {"idJuego"})
     Page<JuegosCopia> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM JuegosCopia e LEFT JOIN FETCH e.idJuego WHERE " +
+    @EntityGraph(attributePaths = {"idJuego"})
+    @Query("SELECT e FROM JuegosCopia e WHERE " +
            "(:idJuego IS NULL OR e.idJuego.id = :idJuego) AND " +
            "(:estado IS NULL OR str(e.estado) = :estado)")
     Page<JuegosCopia> filter(@Param("idJuego") Integer idJuego,
