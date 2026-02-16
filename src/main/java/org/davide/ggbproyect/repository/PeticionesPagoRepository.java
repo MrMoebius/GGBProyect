@@ -18,7 +18,8 @@ public interface PeticionesPagoRepository extends JpaRepository<PeticionesPago, 
     @EntityGraph(attributePaths = {"idSesion"})
     Page<PeticionesPago> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM PeticionesPago e LEFT JOIN FETCH e.idSesion WHERE " +
+    @EntityGraph(attributePaths = {"idSesion"})
+    @Query("SELECT e FROM PeticionesPago e WHERE " +
            "(:idSesion IS NULL OR e.idSesion.id = :idSesion) AND " +
            "(:metodoPreferido IS NULL OR str(e.metodoPreferido) = :metodoPreferido) AND " +
            "(:atendida IS NULL OR e.atendida = :atendida)")

@@ -21,4 +21,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
                           @Param("categoria") String categoria,
                           @Param("activo") Boolean activo,
                           Pageable pageable);
+
+    boolean existsByNombre(String nombre);
+
+    boolean existsByNombreAndIdNot(String nombre, Integer id);
 }

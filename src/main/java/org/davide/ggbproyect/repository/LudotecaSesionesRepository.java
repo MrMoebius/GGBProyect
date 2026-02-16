@@ -18,7 +18,8 @@ public interface LudotecaSesionesRepository extends JpaRepository<LudotecaSesion
     @EntityGraph(attributePaths = {"idSesion", "idComandaLudoteca"})
     Page<LudotecaSesiones> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM LudotecaSesiones e LEFT JOIN FETCH e.idSesion LEFT JOIN FETCH e.idComandaLudoteca WHERE " +
+    @EntityGraph(attributePaths = {"idSesion", "idComandaLudoteca"})
+    @Query("SELECT e FROM LudotecaSesiones e WHERE " +
            "(:idSesion IS NULL OR e.idSesion.id = :idSesion)")
     Page<LudotecaSesiones> filter(@Param("idSesion") Integer idSesion,
                                    Pageable pageable);
