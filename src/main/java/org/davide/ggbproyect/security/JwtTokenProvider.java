@@ -68,7 +68,7 @@ public class JwtTokenProvider {
             Jwts.parserBuilder()
                     .setSigningKey(key())
                     .build()
-                    .parse(token);
+                    .parseClaimsJws(token);
             return true;
         } catch (MalformedJwtException e) {
             log.warn("Token JWT malformado: {}", e.getMessage());

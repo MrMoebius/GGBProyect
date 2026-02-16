@@ -15,7 +15,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/comandas")
-@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
 public class ComandaController {
 
     private final ComandaService comandaService;
@@ -25,11 +25,13 @@ public class ComandaController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Page<ComandaDTO>> getAll(Pageable pageable) {
         return ResponseEntity.ok(comandaService.getAll(pageable));
     }
 
     @GetMapping("/filter")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Page<ComandaDTO>> filter(
             @RequestParam(required = false) Integer idSesion,
             @RequestParam(required = false) String estado,
@@ -43,6 +45,7 @@ public class ComandaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ComandaDTO> create(@Valid @RequestBody ComandaDTO comandaDTO) {
         ComandaDTO created = comandaService.create(comandaDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -68,26 +71,31 @@ public class ComandaController {
     }
 
     @PostMapping("/{id}/confirmar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ComandaDTO> confirmar(@PathVariable Integer id) {
         return ResponseEntity.ok(comandaService.confirmar(id));
     }
 
     @PostMapping("/{id}/preparar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ComandaDTO> preparar(@PathVariable Integer id) {
         return ResponseEntity.ok(comandaService.preparar(id));
     }
 
     @PostMapping("/{id}/servir")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ComandaDTO> servir(@PathVariable Integer id) {
         return ResponseEntity.ok(comandaService.servir(id));
     }
 
     @PostMapping("/{id}/cancelar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ComandaDTO> cancelar(@PathVariable Integer id) {
         return ResponseEntity.ok(comandaService.cancelar(id));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         comandaService.delete(id);
         return ResponseEntity.noContent().build();

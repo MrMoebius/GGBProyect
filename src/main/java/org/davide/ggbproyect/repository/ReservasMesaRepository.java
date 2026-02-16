@@ -18,7 +18,8 @@ public interface ReservasMesaRepository extends JpaRepository<ReservasMesa, Inte
     @EntityGraph(attributePaths = {"idCliente", "idMesa", "idJuegoDeseado"})
     Page<ReservasMesa> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM ReservasMesa e LEFT JOIN FETCH e.idCliente LEFT JOIN FETCH e.idMesa LEFT JOIN FETCH e.idJuegoDeseado WHERE " +
+    @EntityGraph(attributePaths = {"idCliente", "idMesa", "idJuegoDeseado"})
+    @Query("SELECT e FROM ReservasMesa e WHERE " +
            "(:idCliente IS NULL OR e.idCliente.id = :idCliente) AND " +
            "(:idMesa IS NULL OR e.idMesa.id = :idMesa) AND " +
            "(:idJuegoDeseado IS NULL OR e.idJuegoDeseado.id = :idJuegoDeseado) AND " +

@@ -49,17 +49,17 @@ public class TarifasLudotecaService {
     public TarifasLudotecaDTO update(Integer id, TarifasLudotecaDTO tarifasLudotecaDTO) {
         TarifasLudoteca existingTarifa = tarifasLudotecaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tarifa de ludoteca con id " + id + " no encontrada"));
+
+        if (tarifasLudotecaDTO.getEdadMin() > tarifasLudotecaDTO.getEdadMax()) {
+            throw new IllegalArgumentException("La edad minima no puede ser mayor que la maxima ");
+        }
+
         existingTarifa.setNombreTramo(tarifasLudotecaDTO.getNombreTramo());
         existingTarifa.setEdadMin(tarifasLudotecaDTO.getEdadMin());
         existingTarifa.setEdadMax(tarifasLudotecaDTO.getEdadMax());
         existingTarifa.setPrecio(tarifasLudotecaDTO.getPrecio());
         existingTarifa.setActivo(tarifasLudotecaDTO.getActivo());
         existingTarifa.setDescripcion(tarifasLudotecaDTO.getDescripcion());
-
-        if (tarifasLudotecaDTO.getEdadMin()>tarifasLudotecaDTO.getEdadMax())
-        {
-            throw new IllegalArgumentException("La edad minima no puede ser mayor que la maxima ");
-        }
 
         return new TarifasLudotecaDTO(tarifasLudotecaRepository.save(existingTarifa));
     }
