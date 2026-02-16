@@ -41,29 +41,20 @@ public class RolesEmpleadoService {
     }
 
     public RolesEmpleadoDTO create(RolesEmpleadoDTO rolesEmpleadoDTO) {
-        RolesEmpleado rolesEmpleado = rolesEmpleadoDTO.toEntity();
-        List<RolesEmpleado> rolesEmpleados = rolesEmpleadoRepository.findAll();
-
-        for (RolesEmpleado rolesEmpleado1 : rolesEmpleados) {
-            if (rolesEmpleado1.getNombreRol().equals(rolesEmpleadoDTO.getNombreRol())) {
-                throw new IllegalArgumentException("El nombre del rol esta duplicado ");
-            }
+        if (rolesEmpleadoRepository.existsByNombreRol(rolesEmpleadoDTO.getNombreRol())) {
+            throw new IllegalArgumentException("El nombre del rol esta duplicado ");
         }
+        RolesEmpleado rolesEmpleado = rolesEmpleadoDTO.toEntity();
         return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(rolesEmpleado));
     }
 
     public RolesEmpleadoDTO update(Integer id, RolesEmpleadoDTO rolesEmpleadoDTO) {
         RolesEmpleado existingRol = rolesEmpleadoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Rol de empleado con id " + id + " no encontrado"));
-        existingRol.setNombreRol(rolesEmpleadoDTO.getNombreRol());
-
-        List<RolesEmpleado> rolesEmpleados = rolesEmpleadoRepository.findAll();
-
-        for (RolesEmpleado rolesEmpleado1 : rolesEmpleados) {
-            if (rolesEmpleado1.getNombreRol().equals(rolesEmpleadoDTO.getNombreRol()) && !rolesEmpleado1.getId().equals(id)) {
-                throw new IllegalArgumentException("El nombre del rol esta duplicado ");
-            }
+        if (rolesEmpleadoRepository.existsByNombreRolAndIdNot(rolesEmpleadoDTO.getNombreRol(), id)) {
+            throw new IllegalArgumentException("El nombre del rol esta duplicado ");
         }
+        existingRol.setNombreRol(rolesEmpleadoDTO.getNombreRol());
 
         return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(existingRol));
     }

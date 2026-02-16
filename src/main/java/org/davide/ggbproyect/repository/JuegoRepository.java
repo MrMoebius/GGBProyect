@@ -27,4 +27,8 @@ public interface JuegoRepository extends JpaRepository<Juego, Integer> {
                        @Param("activo") Boolean activo,
                        @Param("recomendadoDosJugadores") Boolean recomendadoDosJugadores,
                        Pageable pageable);
+
+    boolean existsByNombre(String nombre);
+
+    boolean existsByNombreAndIdNot(String nombre, Integer id);
 }

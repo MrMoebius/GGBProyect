@@ -18,7 +18,8 @@ public interface ReservasJuegoRepository extends JpaRepository<ReservasJuego, In
     @EntityGraph(attributePaths = {"idSesion", "idCopia"})
     Page<ReservasJuego> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM ReservasJuego e LEFT JOIN FETCH e.idSesion LEFT JOIN FETCH e.idCopia WHERE " +
+    @EntityGraph(attributePaths = {"idSesion", "idCopia"})
+    @Query("SELECT e FROM ReservasJuego e WHERE " +
            "(:idSesion IS NULL OR e.idSesion.id = :idSesion) AND " +
            "(:idCopia IS NULL OR e.idCopia.id = :idCopia) AND " +
            "(:estado IS NULL OR LOWER(e.estado) LIKE LOWER(CONCAT('%', :estado, '%')))")

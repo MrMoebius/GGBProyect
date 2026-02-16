@@ -51,14 +51,11 @@ public class MesaService {
 
     public MesaDTO create(MesaDTO mesaDTO) {
         Mesa mesa = mesaDTO.toEntity();
-        List<Mesa> listMesa = mesaRepository.findAll();
-        for (int i=0; i<listMesa.size(); i++) {
-            if (listMesa.get(i).getNombreMesa().equals(mesa.getNombreMesa())) {
-                throw new IllegalArgumentException("Mesa ya existente");
-            }
-            if (listMesa.get(i).getNumeroMesa().equals(mesa.getNumeroMesa())) {
-                throw new IllegalArgumentException("Ya existe una mesa con el numero " + mesa.getNumeroMesa());
-            }
+        if (mesaRepository.existsByNombreMesa(mesa.getNombreMesa())) {
+            throw new IllegalArgumentException("Mesa ya existente");
+        }
+        if (mesaRepository.existsByNumeroMesa(mesa.getNumeroMesa())) {
+            throw new IllegalArgumentException("Ya existe una mesa con el numero " + mesa.getNumeroMesa());
         }
 
         return new MesaDTO(mesaRepository.save(mesa));
@@ -67,14 +64,11 @@ public class MesaService {
     public MesaDTO update(Integer id, MesaDTO mesaDTO) {
         Mesa existingMesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mesa con id " + id + " no encontrada"));
-        List<Mesa> listMesa = mesaRepository.findAll();
-        for (int i = 0; i < listMesa.size(); i++) {
-            if (listMesa.get(i).getNombreMesa().equals(mesaDTO.getNombreMesa()) && !listMesa.get(i).getId().equals(id)) {
-                throw new IllegalArgumentException("Mesa ya existente");
-            }
-            if (listMesa.get(i).getNumeroMesa().equals(mesaDTO.getNumeroMesa()) && !listMesa.get(i).getId().equals(id)) {
-                throw new IllegalArgumentException("Ya existe una mesa con el numero " + mesaDTO.getNumeroMesa());
-            }
+        if (mesaRepository.existsByNombreMesaAndIdNot(mesaDTO.getNombreMesa(), id)) {
+            throw new IllegalArgumentException("Mesa ya existente");
+        }
+        if (mesaRepository.existsByNumeroMesaAndIdNot(mesaDTO.getNumeroMesa(), id)) {
+            throw new IllegalArgumentException("Ya existe una mesa con el numero " + mesaDTO.getNumeroMesa());
         }
         existingMesa.setNumeroMesa(mesaDTO.getNumeroMesa());
         existingMesa.setNombreMesa(mesaDTO.getNombreMesa());
