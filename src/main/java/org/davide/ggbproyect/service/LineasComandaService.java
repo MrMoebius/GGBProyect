@@ -1,9 +1,8 @@
 package org.davide.ggbproyect.service;
 
-import org.davide.ggbproyect.models.Comanda;
-import org.davide.ggbproyect.models.LineasComanda;
-import org.davide.ggbproyect.models.LineasComandaDTO;
-import org.davide.ggbproyect.models.Producto;
+import org.davide.ggbproyect.models.*;
+import org.davide.ggbproyect.models.enums.EstadoComanda;
+import org.davide.ggbproyect.repository.ClienteRepository;
 import org.davide.ggbproyect.repository.ComandaRepository;
 import org.davide.ggbproyect.repository.LineasComandaRepository;
 import org.davide.ggbproyect.repository.ProductoRepository;
@@ -24,13 +23,16 @@ public class LineasComandaService {
     private final LineasComandaRepository lineasComandaRepository;
     private final ComandaRepository comandaRepository;
     private final ProductoRepository productoRepository;
+    private final ClienteRepository clienteRepository;
 
     public LineasComandaService(LineasComandaRepository lineasComandaRepository,
                                 ComandaRepository comandaRepository,
-                                ProductoRepository productoRepository) {
+                                ProductoRepository productoRepository,
+                                ClienteRepository clienteRepository) {
         this.lineasComandaRepository = lineasComandaRepository;
         this.comandaRepository = comandaRepository;
         this.productoRepository = productoRepository;
+        this.clienteRepository = clienteRepository;
     }
 
     @Transactional(readOnly = true)
@@ -97,6 +99,44 @@ public class LineasComandaService {
         Integer idComanda = linea.getIdComanda().getId();
         lineasComandaRepository.deleteById(id);
         recalcularTotalComanda(idComanda);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LineasComandaDTO> getByComandaId(Integer idComanda) {
+        return lineasComandaRepository.findByIdComandaId(idComanda).stream()
+                .map(LineasComandaDTO::new)
+                .toList();
+    }
+
+    public LineasComandaDTO createByCliente(LineasComandaDTO dto, String emailCliente) {
+        Cliente cliente = clienteRepository.findByEmail(emailCliente)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        Comanda comanda = comandaRepository.findById(dto.getIdComanda())
+                .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + dto.getIdComanda() + " no encontrada"));
+        SesionesMesa sesion = comanda.getIdSesion();
+        if (sesion.getIdCliente() == null || !sesion.getIdCliente().getId().equals(cliente.getId())) {
+            throw new IllegalStateException("No tienes permiso para modificar esta comanda");
+        }
+        if (comanda.getEstado() != EstadoComanda.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden modificar comandas pendientes");
+        }
+        return create(dto);
+    }
+
+    public void deleteByCliente(Integer id, String emailCliente) {
+        Cliente cliente = clienteRepository.findByEmail(emailCliente)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        LineasComanda linea = lineasComandaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada"));
+        Comanda comanda = linea.getIdComanda();
+        SesionesMesa sesion = comanda.getIdSesion();
+        if (sesion.getIdCliente() == null || !sesion.getIdCliente().getId().equals(cliente.getId())) {
+            throw new IllegalStateException("No tienes permiso para modificar esta comanda");
+        }
+        if (comanda.getEstado() != EstadoComanda.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden modificar comandas pendientes");
+        }
+        delete(id);
     }
 
     private void recalcularTotalComanda(Integer idComanda) {
