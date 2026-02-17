@@ -107,6 +107,12 @@ public class ComandaController {
         return ResponseEntity.ok(comandaService.cancelarByCliente(id, auth.getName()));
     }
 
+    @GetMapping("/sesion/{idSesion}/cliente")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<List<ComandaDTO>> getBySesionCliente(@PathVariable Integer idSesion, Authentication auth) {
+        return ResponseEntity.ok(comandaService.getBySesionCliente(idSesion, auth.getName()));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
