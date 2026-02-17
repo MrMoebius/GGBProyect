@@ -32,6 +32,67 @@ public class EmailService {
     private String baseUrl;
 
     /**
+     * Envía una factura por email al cliente en formato ticket.
+     */
+    public void enviarFactura(String destinatario, String nombreCliente, String numeroFactura,
+                              String fechaEmision, String baseIva10, String cuotaIva10,
+                              String baseIva21, String cuotaIva21, String importeLudoteca,
+                              String total, String totalPagado, String estado) {
+        String asunto = "Factura " + numeroFactura + " - GG Bar";
+        String contenido = """
+                <html>
+                <body style="font-family: 'Courier New', monospace; max-width: 400px; margin: 0 auto; padding: 20px; color: #333; background: #fff;">
+                <div style="text-align: center; margin-bottom: 16px;">
+                    <h2 style="margin: 0; font-size: 20px;">GG Bar</h2>
+                    <p style="margin: 4px 0; font-size: 13px; color: #666;">Factura Simplificada</p>
+                    <p style="margin: 4px 0; font-weight: bold; font-size: 14px;">%s</p>
+                    <p style="margin: 4px 0; font-size: 12px;">%s</p>
+                </div>
+                <hr style="border: none; border-top: 1px dashed #999;">
+                <p style="font-size: 13px;">Cliente: %s</p>
+                <hr style="border: none; border-top: 1px dashed #999;">
+                <table style="width: 100%%; font-size: 12px; border-collapse: collapse;">
+                    <tr><td>Base IVA 10%%</td><td style="text-align: right;">%s EUR</td></tr>
+                    <tr><td>Cuota IVA 10%%</td><td style="text-align: right;">%s EUR</td></tr>
+                    <tr><td>Base IVA 21%%</td><td style="text-align: right;">%s EUR</td></tr>
+                    <tr><td>Cuota IVA 21%%</td><td style="text-align: right;">%s EUR</td></tr>
+                    %s
+                </table>
+                <hr style="border: none; border-top: 1px dashed #999;">
+                <table style="width: 100%%; font-size: 14px; font-weight: bold; border-collapse: collapse;">
+                    <tr><td>TOTAL</td><td style="text-align: right;">%s EUR</td></tr>
+                    <tr><td style="font-weight: normal; font-size: 12px;">Pagado</td><td style="text-align: right; font-weight: normal; font-size: 12px;">%s EUR</td></tr>
+                </table>
+                <hr style="border: none; border-top: 1px dashed #999;">
+                <p style="text-align: center; font-size: 11px; color: #666;">Estado: %s</p>
+                <p style="text-align: center; font-size: 11px; color: #666;">Gracias por su visita · IVA incluido</p>
+                </body>
+                </html>
+                """.formatted(
+                numeroFactura, fechaEmision, nombreCliente,
+                baseIva10, cuotaIva10, baseIva21, cuotaIva21,
+                (importeLudoteca != null && !importeLudoteca.equals("0,00"))
+                        ? "<tr><td>Ludoteca</td><td style=\"text-align: right;\">" + importeLudoteca + " EUR</td></tr>"
+                        : "",
+                total, totalPagado, estado
+        );
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(destinatario);
+            helper.setSubject(asunto);
+            helper.setText(contenido, true);
+            mailSender.send(message);
+            log.info("Factura {} enviada por email a: {}", numeroFactura, destinatario);
+        } catch (MessagingException e) {
+            log.error("Error enviando factura por email a {}: {}", destinatario, e.getMessage());
+            throw new RuntimeException("Error al enviar la factura por email", e);
+        }
+    }
+
+    /**
      * Envía un email de verificación al cliente recién creado.
      * El email contiene un enlace con el token para confirmar la cuenta.
      *

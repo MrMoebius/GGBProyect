@@ -27,7 +27,7 @@ public class FacturaController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Page<FacturaDTO>> getAll(Pageable pageable) {
         return ResponseEntity.ok(facturaService.getAll(pageable));
     }
@@ -42,6 +42,13 @@ public class FacturaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<FacturaDTO> getBySesionId(@PathVariable Integer idSesion) {
         return ResponseEntity.ok(facturaService.getBySesionId(idSesion));
+    }
+
+    @PostMapping("/{id}/enviar-email")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    public ResponseEntity<Void> enviarPorEmail(@PathVariable Integer id) {
+        facturaService.enviarPorEmail(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/mis-facturas")

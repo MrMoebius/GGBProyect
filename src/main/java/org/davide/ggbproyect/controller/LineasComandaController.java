@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -55,6 +56,30 @@ public class LineasComandaController {
     @PutMapping("/{id}")
     public ResponseEntity<LineasComandaDTO> update(@PathVariable Integer id, @Valid @RequestBody LineasComandaDTO lineasComandaDTO) {
         return ResponseEntity.ok(lineasComandaService.update(id, lineasComandaDTO));
+    }
+
+    @GetMapping("/comanda/{idComanda}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
+    public ResponseEntity<List<LineasComandaDTO>> getByComanda(@PathVariable Integer idComanda) {
+        return ResponseEntity.ok(lineasComandaService.getByComandaId(idComanda));
+    }
+
+    @PostMapping("/cliente")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<LineasComandaDTO> createByCliente(@Valid @RequestBody LineasComandaDTO dto, Authentication auth) {
+        LineasComandaDTO created = lineasComandaService.createByCliente(dto, auth.getName());
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
+    }
+
+    @DeleteMapping("/{id}/cliente")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<Void> deleteByCliente(@PathVariable Integer id, Authentication auth) {
+        lineasComandaService.deleteByCliente(id, auth.getName());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

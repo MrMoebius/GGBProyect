@@ -159,6 +159,34 @@ public class ComandaService {
                 .map(ComandaDTO::new);
     }
 
+    @Transactional(readOnly = true)
+    public List<ComandaDTO> getMisComandasBySesion(String emailCliente) {
+        Cliente cliente = clienteRepository.findByEmail(emailCliente)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        List<SesionesMesa> activas = sesionesMesaRepository.findByIdClienteIdAndEstado(
+                cliente.getId(), EstadoSesion.ACTIVA);
+        if (activas.isEmpty()) return List.of();
+        return comandaRepository.findByIdSesionId(activas.get(0).getId()).stream()
+                .map(ComandaDTO::new)
+                .toList();
+    }
+
+    public ComandaDTO cancelarByCliente(Integer id, String emailCliente) {
+        Cliente cliente = clienteRepository.findByEmail(emailCliente)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        Comanda comanda = comandaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + id + " no encontrada"));
+        SesionesMesa sesion = comanda.getIdSesion();
+        if (sesion.getIdCliente() == null || !sesion.getIdCliente().getId().equals(cliente.getId())) {
+            throw new IllegalStateException("No tienes permiso para cancelar esta comanda");
+        }
+        if (comanda.getEstado() != EstadoComanda.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden cancelar comandas pendientes");
+        }
+        comanda.setEstado(EstadoComanda.CANCELADA);
+        return new ComandaDTO(comandaRepository.save(comanda));
+    }
+
     public void delete(Integer id) {
         if (!comandaRepository.existsById(id)) {
             throw new EntityNotFoundException("Comanda con id " + id + " no encontrada");
