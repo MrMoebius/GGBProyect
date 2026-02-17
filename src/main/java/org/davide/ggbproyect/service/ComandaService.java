@@ -187,6 +187,20 @@ public class ComandaService {
         return new ComandaDTO(comandaRepository.save(comanda));
     }
 
+    @Transactional(readOnly = true)
+    public List<ComandaDTO> getBySesionCliente(Integer idSesion, String emailCliente) {
+        Cliente cliente = clienteRepository.findByEmail(emailCliente)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        SesionesMesa sesion = sesionesMesaRepository.findById(idSesion)
+                .orElseThrow(() -> new EntityNotFoundException("Sesion con id " + idSesion + " no encontrada"));
+        if (sesion.getIdCliente() == null || !sesion.getIdCliente().getId().equals(cliente.getId())) {
+            throw new IllegalStateException("No tienes permiso para ver las comandas de esta sesion");
+        }
+        return comandaRepository.findByIdSesionId(idSesion).stream()
+                .map(ComandaDTO::new)
+                .toList();
+    }
+
     public void delete(Integer id) {
         if (!comandaRepository.existsById(id)) {
             throw new EntityNotFoundException("Comanda con id " + id + " no encontrada");
