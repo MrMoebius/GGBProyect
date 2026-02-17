@@ -28,19 +28,22 @@ public class FacturaService {
     private final LineasComandaRepository lineasComandaRepository;
     private final PagosMesaRepository pagosMesaRepository;
     private final LudotecaSesionesRepository ludotecaSesionesRepository;
+    private final EmailService emailService;
 
     public FacturaService(FacturaRepository facturaRepository,
                           SesionesMesaRepository sesionesMesaRepository,
                           ComandaRepository comandaRepository,
                           LineasComandaRepository lineasComandaRepository,
                           PagosMesaRepository pagosMesaRepository,
-                          LudotecaSesionesRepository ludotecaSesionesRepository) {
+                          LudotecaSesionesRepository ludotecaSesionesRepository,
+                          EmailService emailService) {
         this.facturaRepository = facturaRepository;
         this.sesionesMesaRepository = sesionesMesaRepository;
         this.comandaRepository = comandaRepository;
         this.lineasComandaRepository = lineasComandaRepository;
         this.pagosMesaRepository = pagosMesaRepository;
         this.ludotecaSesionesRepository = ludotecaSesionesRepository;
+        this.emailService = emailService;
     }
 
     @Transactional(readOnly = true)
@@ -138,6 +141,33 @@ public class FacturaService {
         factura.setEstado(totalPagado.compareTo(total) >= 0 ? EstadoFactura.PAGADA : EstadoFactura.EMITIDA);
 
         return new FacturaDTO(facturaRepository.save(factura));
+    }
+
+    public void enviarPorEmail(Integer id) {
+        Factura factura = facturaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Factura con id " + id + " no encontrada"));
+        if (factura.getIdCliente() == null) {
+            throw new IllegalStateException("La factura no tiene cliente asociado");
+        }
+        Cliente cliente = factura.getIdCliente();
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00");
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                .withZone(java.time.ZoneId.of("Europe/Madrid"));
+
+        emailService.enviarFactura(
+                cliente.getEmail(),
+                cliente.getNombre(),
+                factura.getNumeroFactura(),
+                dtf.format(factura.getFechaEmision()),
+                df.format(factura.getBaseImponible10()),
+                df.format(factura.getCuotaIva10()),
+                df.format(factura.getBaseImponible21()),
+                df.format(factura.getCuotaIva21()),
+                df.format(factura.getImporteLudoteca() != null ? factura.getImporteLudoteca() : BigDecimal.ZERO),
+                df.format(factura.getTotal()),
+                df.format(factura.getTotalPagado()),
+                factura.getEstado().name()
+        );
     }
 
     private String generarNumeroFactura() {

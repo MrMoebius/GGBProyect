@@ -3,6 +3,7 @@ package org.davide.ggbproyect.repository;
 import org.davide.ggbproyect.models.SesionesMesa;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.davide.ggbproyect.models.enums.EstadoSesion;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +30,6 @@ public interface SesionesMesaRepository extends JpaRepository<SesionesMesa, Inte
                               @Param("idReserva") Integer idReserva,
                               @Param("idEmpleadoApertura") Integer idEmpleadoApertura,
                               Pageable pageable);
+
+    List<SesionesMesa> findByIdClienteIdAndEstado(Integer clienteId, EstadoSesion estado);
 }

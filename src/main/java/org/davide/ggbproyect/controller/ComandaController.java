@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/comandas")
@@ -92,6 +93,18 @@ public class ComandaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ComandaDTO> cancelar(@PathVariable Integer id) {
         return ResponseEntity.ok(comandaService.cancelar(id));
+    }
+
+    @GetMapping("/mis-comandas")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<List<ComandaDTO>> getMisComandas(Authentication auth) {
+        return ResponseEntity.ok(comandaService.getMisComandasBySesion(auth.getName()));
+    }
+
+    @PostMapping("/{id}/cancelar-cliente")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<ComandaDTO> cancelarByCliente(@PathVariable Integer id, Authentication auth) {
+        return ResponseEntity.ok(comandaService.cancelarByCliente(id, auth.getName()));
     }
 
     @DeleteMapping("/{id}")

@@ -282,6 +282,15 @@ public class SesionesMesaService {
                 .map(SesionesMesaDTO::new);
     }
 
+    @Transactional(readOnly = true)
+    public SesionesMesaDTO getMiSesionActiva(String emailCliente) {
+        Cliente cliente = clienteRepository.findByEmail(emailCliente)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        List<SesionesMesa> activas = sesionesMesaRepository.findByIdClienteIdAndEstado(cliente.getId(), EstadoSesion.ACTIVA);
+        if (activas.isEmpty()) return null;
+        return new SesionesMesaDTO(activas.get(0));
+    }
+
     public void delete(Integer id) {
         if (!sesionesMesaRepository.existsById(id)) {
             throw new EntityNotFoundException("Sesion de mesa con id " + id + " no encontrada");
