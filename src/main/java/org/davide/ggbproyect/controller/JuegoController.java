@@ -75,6 +75,13 @@ public class JuegoController {
         return ResponseEntity.ok(juegoService.getById(id));
     }
 
+    @GetMapping("/exists")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Boolean>> existsByNombre(@RequestParam String nombre) {
+        boolean exists = juegoService.existsByNombre(nombre);
+        return ResponseEntity.ok(Map.of("exists", exists));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JuegoDTO> create(@Valid @RequestBody JuegoDTO juegoDTO) {
@@ -127,6 +134,22 @@ public class JuegoController {
 
         log.info("Imagen subida para juego {}: {}", id, target.getFileName());
         return ResponseEntity.ok(Map.of("message", "Imagen subida correctamente"));
+    }
+
+    @PostMapping("/{targetId}/copy-imagen/{sourceId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> copyImagen(@PathVariable Integer targetId, @PathVariable Integer sourceId) throws IOException {
+        juegoService.getById(targetId);
+        Path sourceImage = findImageFile(sourceId);
+        if (sourceImage == null) {
+            return ResponseEntity.notFound().build();
+        }
+        deleteExistingImage(targetId);
+        String fileName = sourceImage.getFileName().toString();
+        String ext = fileName.substring(fileName.lastIndexOf('.'));
+        Path target = uploadDir.resolve(targetId + ext);
+        Files.copy(sourceImage, target, StandardCopyOption.REPLACE_EXISTING);
+        return ResponseEntity.ok(Map.of("message", "Imagen copiada correctamente"));
     }
 
     @GetMapping("/{id}/imagen")
