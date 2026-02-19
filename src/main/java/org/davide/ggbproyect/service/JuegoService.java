@@ -40,22 +40,26 @@ public class JuegoService {
     }
 
     public JuegoDTO create(JuegoDTO juegoDTO) {
-        if (juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
+        if (juegoDTO.getMinJugadores() != null && juegoDTO.getMaxJugadores() != null
+                && juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
             throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
-        }
-        if (juegoRepository.existsByNombre(juegoDTO.getNombre())) {
-            throw new IllegalArgumentException("El nombre del juego esta duplicado ");
         }
 
         Juego juego = juegoDTO.toEntity();
         return new JuegoDTO(juegoRepository.save(juego));
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsByNombre(String nombre) {
+        return juegoRepository.existsByNombre(nombre);
+    }
+
     public JuegoDTO update(Integer id, JuegoDTO juegoDTO) {
         Juego existingJuego = juegoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Juego con id " + id + " no encontrado"));
 
-        if (juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
+        if (juegoDTO.getMinJugadores() != null && juegoDTO.getMaxJugadores() != null
+                && juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
             throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
         }
         if (juegoRepository.existsByNombreAndIdNot(juegoDTO.getNombre(), id)) {
