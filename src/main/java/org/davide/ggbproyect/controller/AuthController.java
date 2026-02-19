@@ -133,4 +133,20 @@ public class AuthController {
         response.put("message", "Se ha enviado un nuevo email de verificación.");
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/solicitar-recuperacion")
+    public ResponseEntity<Map<String, String>> solicitarRecuperacion(@RequestParam String email) {
+        clienteService.solicitarRecuperacion(email);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Si el email existe, recibirás un enlace para restablecer tu contraseña.");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/recuperar-password")
+    public ResponseEntity<Map<String, String>> recuperarPassword(@Valid @RequestBody VerificacionDTO verificacionDTO) {
+        clienteService.recuperarPassword(verificacionDTO.getToken(), verificacionDTO.getPassword());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Contraseña restablecida correctamente. Ya puedes iniciar sesión.");
+        return ResponseEntity.ok(response);
+    }
 }

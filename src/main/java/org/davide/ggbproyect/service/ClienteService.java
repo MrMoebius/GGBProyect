@@ -189,6 +189,36 @@ public class ClienteService {
         emailService.enviarEmailVerificacion(cliente.getEmail(), cliente.getNombre(), token);
     }
 
+    public void solicitarRecuperacion(String email) {
+        Cliente cliente = clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró un cliente con el email: " + email));
+
+        if (!Boolean.TRUE.equals(cliente.getEmailVerificado())) {
+            throw new IllegalStateException("El email no ha sido verificado. Debes verificar tu cuenta primero.");
+        }
+
+        String token = UUID.randomUUID().toString();
+        cliente.setTokenRecuperacion(token);
+        cliente.setTokenRecuperacionExpira(LocalDateTime.now().plusHours(1));
+        clienteRepository.save(cliente);
+
+        emailService.enviarEmailRecuperacion(cliente.getEmail(), cliente.getNombre(), token);
+    }
+
+    public void recuperarPassword(String token, String newPassword) {
+        Cliente cliente = clienteRepository.findByTokenRecuperacion(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token de recuperación inválido"));
+
+        if (cliente.getTokenRecuperacionExpira().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("El token de recuperación ha expirado. Solicita uno nuevo.");
+        }
+
+        cliente.setPassword(passwordEncoder.encode(newPassword));
+        cliente.setTokenRecuperacion(null);
+        cliente.setTokenRecuperacionExpira(null);
+        clienteRepository.save(cliente);
+    }
+
     public void delete(Integer id) {
         if (!clienteRepository.existsById(id)) {
             throw new EntityNotFoundException("Cliente con id " + id + " no encontrado");

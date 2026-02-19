@@ -73,6 +73,13 @@ public class Cliente {
     @Column(name = "token_verificacion_expira")
     private LocalDateTime tokenVerificacionExpira;
 
+    @Size(max = 36)
+    @Column(name = "token_recuperacion", length = 36)
+    private String tokenRecuperacion;
+
+    @Column(name = "token_recuperacion_expira")
+    private LocalDateTime tokenRecuperacionExpira;
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

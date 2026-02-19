@@ -18,6 +18,8 @@ public interface ClienteRepository extends JpaRepository<Cliente, Integer> {
     // Buscar cliente por token de verificación de email
     Optional<Cliente> findByTokenVerificacion(String tokenVerificacion);
 
+    Optional<Cliente> findByTokenRecuperacion(String tokenRecuperacion);
+
     @Query("SELECT e FROM Cliente e WHERE " +
            "(:nombre IS NULL OR LOWER(e.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) AND " +
            "(:email IS NULL OR LOWER(e.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +

@@ -142,4 +142,43 @@ public class EmailService {
             throw new RuntimeException("Error al enviar el email de verificación", e);
         }
     }
+
+    public void enviarEmailRecuperacion(String destinatario, String nombre, String token) {
+        String enlace = baseUrl + "/auth/recuperar-password?token=" + token;
+        String asunto = "Recuperar contraseña - GGBProyect";
+
+        String contenido = """
+                <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <h2>Hola %s,</h2>
+                <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el siguiente enlace para elegir una nueva contraseña:</p>
+                <p style="text-align: center; margin: 30px 0;">
+                    <a href="%s" style="background-color: #FF6B6B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-size: 16px;">
+                        Restablecer contraseña
+                    </a>
+                </p>
+                <p>O copia y pega este enlace en tu navegador:</p>
+                <p><a href="%s">%s</a></p>
+                <p><strong>Este enlace expirará en 1 hora.</strong></p>
+                <p>Si no has solicitado este cambio, puedes ignorar este email. Tu contraseña no se modificará.</p>
+                <br>
+                <p>Saludos,<br>Equipo GGBProyect</p>
+                </body>
+                </html>
+                """.formatted(nombre, enlace, enlace, enlace);
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(destinatario);
+            helper.setSubject(asunto);
+            helper.setText(contenido, true);
+            mailSender.send(message);
+            log.info("Email de recuperación enviado correctamente a: {}", destinatario);
+        } catch (MessagingException e) {
+            log.error("Error enviando email de recuperación a {}: {}", destinatario, e.getMessage());
+            throw new RuntimeException("Error al enviar el email de recuperación", e);
+        }
+    }
 }
