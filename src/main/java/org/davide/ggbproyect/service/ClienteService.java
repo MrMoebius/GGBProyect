@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.davide.ggbproyect.models.Cliente;
 import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.repository.ClienteRepository;
-import org.slf4j.Logger; //los logger son imports necesarios junto a los de la linea 18 y 19
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;

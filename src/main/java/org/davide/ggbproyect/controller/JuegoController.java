@@ -130,7 +130,9 @@ public class JuegoController {
         // Guardar con la extension correcta
         String ext = TYPE_TO_EXT.get(contentType);
         Path target = uploadDir.resolve(id + ext);
-        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         log.info("Imagen subida para juego {}: {}", id, target.getFileName());
         return ResponseEntity.ok(Map.of("message", "Imagen subida correctamente"));

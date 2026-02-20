@@ -106,7 +106,7 @@ public class EmailService {
         String enlace = baseUrl + "/auth/verificar-email?token=" + token;
         String asunto = "Verifica tu cuenta - GGBProyect";
 
-        // Plantilla HTML del email de verificación (me lo ha hecho chati)
+        // Plantilla HTML del email de verificación
         String contenido = """
                 <html>
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">

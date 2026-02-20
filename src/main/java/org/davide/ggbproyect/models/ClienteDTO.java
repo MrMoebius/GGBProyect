@@ -54,7 +54,7 @@ public class ClienteDTO {
         this.telefono = entity.getTelefono();
         this.fechaAlta = entity.getFechaAlta();
         this.notas = entity.getNotas();
-        this.emailVerificado = entity.getEmailVerificado(); //nueva linea pa la verification
+        this.emailVerificado = entity.getEmailVerificado();
     }
 
     public Cliente toEntity() {

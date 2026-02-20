@@ -292,8 +292,10 @@ public class SesionesMesaService {
     }
 
     public void delete(Integer id) {
-        if (!sesionesMesaRepository.existsById(id)) {
-            throw new EntityNotFoundException("Sesion de mesa con id " + id + " no encontrada");
+        SesionesMesa sesion = sesionesMesaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Sesion de mesa con id " + id + " no encontrada"));
+        if (sesion.getEstado() == EstadoSesion.ACTIVA) {
+            throw new IllegalStateException("No se puede eliminar una sesion activa. Ciérrala o cancélala primero.");
         }
         sesionesMesaRepository.deleteById(id);
     }
