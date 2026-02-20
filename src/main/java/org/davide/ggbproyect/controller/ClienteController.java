@@ -142,7 +142,9 @@ public class ClienteController {
 
         String ext = TYPE_TO_EXT.get(contentType);
         Path target = uploadDir.resolve(id + ext);
-        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         return ResponseEntity.ok(Map.of("message", "Foto de perfil actualizada"));
     }
