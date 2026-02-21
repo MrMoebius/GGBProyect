@@ -76,7 +76,7 @@ public class ClienteController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ClienteDTO> create(@Valid @RequestBody ClienteDTO clienteDTO) {
         ClienteDTO created = clienteService.create(clienteDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -87,7 +87,7 @@ public class ClienteController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ClienteDTO> update(@PathVariable Integer id, @Valid @RequestBody ClienteDTO clienteDTO) {
         return ResponseEntity.ok(clienteService.update(id, clienteDTO));
     }
@@ -116,7 +116,7 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         clienteService.delete(id);
         return ResponseEntity.noContent().build();

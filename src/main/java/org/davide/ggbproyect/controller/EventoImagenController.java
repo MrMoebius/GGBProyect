@@ -44,7 +44,7 @@ public class EventoImagenController {
     }
 
     @PostMapping("/{id}/imagen")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> uploadImagen(@PathVariable Integer id,
                                           @RequestParam("file") MultipartFile file) throws IOException {
         String contentType = file.getContentType();
@@ -83,7 +83,7 @@ public class EventoImagenController {
     }
 
     @DeleteMapping("/{id}/imagen")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> deleteImagen(@PathVariable Integer id) throws IOException {
         boolean deleted = deleteExistingImage(id);
         if (deleted) {
