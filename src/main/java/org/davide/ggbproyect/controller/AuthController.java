@@ -7,6 +7,7 @@ import org.davide.ggbproyect.models.LoginDto;
 import org.davide.ggbproyect.models.RegistroDTO;
 import org.davide.ggbproyect.models.VerificacionDTO;
 import org.davide.ggbproyect.repository.ClienteRepository;
+import org.davide.ggbproyect.repository.EmpleadoRepository;
 import org.davide.ggbproyect.security.JwtTokenProvider;
 import org.davide.ggbproyect.security.LoginRateLimiter;
 import org.davide.ggbproyect.service.ClienteService;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,17 +33,20 @@ public class AuthController {
     private final LoginRateLimiter loginRateLimiter;
     private final ClienteService clienteService;
     private final ClienteRepository clienteRepository;
+    private final EmpleadoRepository empleadoRepository;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtTokenProvider jwtTokenProvider,
                           LoginRateLimiter loginRateLimiter,
                           ClienteService clienteService,
-                          ClienteRepository clienteRepository) {
+                          ClienteRepository clienteRepository,
+                          EmpleadoRepository empleadoRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.loginRateLimiter = loginRateLimiter;
         this.clienteService = clienteService;
         this.clienteRepository = clienteRepository;
+        this.empleadoRepository = empleadoRepository;
     }
 
     /**
@@ -101,6 +106,15 @@ public class AuthController {
                     });
 
             return ResponseEntity.ok(response);
+        } catch (DisabledException e) {
+            Map<String, Object> error = new HashMap<>();
+            boolean isEmpleado = empleadoRepository.findByEmail(loginDto.getEmail()).isPresent();
+            if (isEmpleado) {
+                error.put("message", "Tu cuenta de empleado no esta activa. Contacta con un administrador.");
+            } else {
+                error.put("message", "Debe verificar su email antes de iniciar sesion. Revise su correo o solicite un nuevo enlace de verificacion.");
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
         } catch (BadCredentialsException e) {
             loginRateLimiter.registerFailedAttempt(key);
             loginRateLimiter.registerFailedAttempt(ip);

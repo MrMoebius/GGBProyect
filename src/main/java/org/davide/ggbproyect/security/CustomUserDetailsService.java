@@ -2,6 +2,7 @@ package org.davide.ggbproyect.security;
 
 import org.davide.ggbproyect.models.Cliente;
 import org.davide.ggbproyect.models.Empleado;
+import org.davide.ggbproyect.models.enums.EstadoEmpleado;
 import org.davide.ggbproyect.repository.ClienteRepository;
 import org.davide.ggbproyect.repository.EmpleadoRepository;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,13 +35,21 @@ public class CustomUserDetailsService implements UserDetailsService {
         // Try to find employee first
         Optional<Empleado> empleado = empleadoRepository.findByEmail(email);
         if (empleado.isPresent()) {
-            // Force initialization of the lazy-loaded role
-            String roleName = empleado.get().getIdRol().getNombreRol();
-            
+            Empleado emp = empleado.get();
+            String roleName = emp.getIdRol().getNombreRol();
             Set<GrantedAuthority> authorities = Collections.singleton(
                     new SimpleGrantedAuthority("ROLE_" + roleName)
             );
-            return new User(empleado.get().getEmail(), empleado.get().getPassword(), authorities);
+            boolean activo = emp.getEstado() == null || emp.getEstado() == EstadoEmpleado.ACTIVO;
+            return new User(
+                    emp.getEmail(),
+                    emp.getPassword(),
+                    activo,
+                    true,
+                    true,
+                    true,
+                    authorities
+            );
         }
 
         // If not employee, try client
