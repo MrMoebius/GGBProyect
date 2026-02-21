@@ -158,6 +158,40 @@ public class ReservasMesaService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<ReservasMesaDTO> getMisReservas(String email) {
+        Cliente cliente = clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        return reservasMesaRepository.findByIdClienteId(cliente.getId())
+                .stream()
+                .map(ReservasMesaDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public ReservasMesaDTO cancelarByCliente(Integer id, String email) {
+        Cliente cliente = clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        ReservasMesa reserva = reservasMesaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva con id " + id + " no encontrada"));
+        if (reserva.getIdCliente() == null || !reserva.getIdCliente().getId().equals(cliente.getId())) {
+            throw new IllegalStateException("No tienes permiso para cancelar esta reserva");
+        }
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE && reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+            throw new IllegalStateException("Solo se pueden cancelar reservas pendientes o confirmadas");
+        }
+        reserva.setEstado(EstadoReserva.CANCELADA);
+        return new ReservasMesaDTO(reservasMesaRepository.save(reserva));
+    }
+
+    public ReservasMesaDTO changeEstado(Integer id, String nuevoEstado) {
+        ReservasMesa reserva = reservasMesaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva con id " + id + " no encontrada"));
+        EstadoReserva estado = EstadoReserva.valueOf(nuevoEstado);
+        validateTransicionReserva(reserva.getEstado(), estado);
+        reserva.setEstado(estado);
+        return new ReservasMesaDTO(reservasMesaRepository.save(reserva));
+    }
+
     public void delete(Integer id) {
         if (!reservasMesaRepository.existsById(id)) {
             throw new EntityNotFoundException("Reserva de mesa con id " + id + " no encontrada");

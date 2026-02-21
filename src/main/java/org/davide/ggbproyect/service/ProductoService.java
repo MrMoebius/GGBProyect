@@ -74,13 +74,17 @@ public class ProductoService {
                 .map(ProductoDTO::new);
     }
 
-    public void delete(Integer id) {
-        if (!productoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Producto con id " + id + " no encontrado");
+    public boolean delete(Integer id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Producto con id " + id + " no encontrado"));
+        try {
+            productoRepository.deleteById(id);
+            productoRepository.flush();
+            return true;
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            producto.setActivo(false);
+            productoRepository.save(producto);
+            return false;
         }
-        if (!lineasComandaRepository.filter(null, id, org.springframework.data.domain.PageRequest.of(0, 1)).isEmpty()) {
-            throw new IllegalStateException("No se puede eliminar el producto porque esta referenciado en lineas de comanda");
-        }
-        productoRepository.deleteById(id);
     }
 }

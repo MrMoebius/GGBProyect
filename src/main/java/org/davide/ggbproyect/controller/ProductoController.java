@@ -61,8 +61,14 @@ public class ProductoController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        productoService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(@PathVariable Integer id) {
+        boolean deleted = productoService.delete(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(java.util.Map.of(
+            "message", "Producto desactivado porque tiene comandas asociadas",
+            "softDelete", true
+        ));
     }
 }
