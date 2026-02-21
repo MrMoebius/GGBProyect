@@ -67,6 +67,10 @@ public class ReservasMesaService {
     public ReservasMesaDTO create(ReservasMesaDTO reservasMesaDTO) {
         ReservasMesa reservasMesa = reservasMesaDTO.toEntity();
 
+        if (reservasMesa.getEstado() == null) {
+            reservasMesa.setEstado(EstadoReserva.PENDIENTE);
+        }
+
         if (reservasMesaDTO.getFechaHoraInicio().isBefore(Instant.now())) {
             throw new IllegalArgumentException("No se puede crear una reserva en el pasado");
         }
