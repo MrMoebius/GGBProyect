@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,8 +67,11 @@ public class ReservasMesaService {
     public ReservasMesaDTO create(ReservasMesaDTO reservasMesaDTO) {
         ReservasMesa reservasMesa = reservasMesaDTO.toEntity();
 
-        if (reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin()))
-        {
+        if (reservasMesaDTO.getFechaHoraInicio().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("No se puede crear una reserva en el pasado");
+        }
+        if (reservasMesaDTO.getFechaHoraFin() != null
+                && reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
             throw new IllegalArgumentException("La fecha de inicio no puede ser despues que la de final");
         }
         if (reservasMesaDTO.getIdCliente() != null) {
@@ -92,7 +96,11 @@ public class ReservasMesaService {
         ReservasMesa existingReserva = reservasMesaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Reserva de mesa con id " + id + " no encontrada"));
 
-        if (reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
+        if (reservasMesaDTO.getFechaHoraInicio().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("No se puede mover una reserva al pasado");
+        }
+        if (reservasMesaDTO.getFechaHoraFin() != null
+                && reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
             throw new IllegalArgumentException("La fecha de inicio no puede ser despues que la de final");
         }
 

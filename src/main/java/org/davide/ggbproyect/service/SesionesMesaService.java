@@ -144,6 +144,9 @@ public class SesionesMesaService {
      * mesa -> OCUPADA, reserva -> COMPLETADA, crea LudotecaSesiones si aplica.
      */
     public SesionesMesaDTO abrir(SesionesMesaDTO dto) {
+        if (dto.getNumComensales() == null || dto.getNumComensales() <= 0) {
+            throw new IllegalArgumentException("El numero de comensales debe ser mayor que 0");
+        }
         Mesa mesa = mesaRepository.findById(dto.getIdMesa())
                 .orElseThrow(() -> new EntityNotFoundException("Mesa con id " + dto.getIdMesa() + " no encontrada"));
 

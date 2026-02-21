@@ -61,6 +61,9 @@ public class PagosMesaService {
     }
 
     public PagosMesaDTO create(PagosMesaDTO pagosMesaDTO) {
+        if (pagosMesaDTO.getImporte() != null && pagosMesaDTO.getImporte().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El importe del pago no puede ser negativo");
+        }
         PagosMesa pagosMesa = pagosMesaDTO.toEntity();
         if (pagosMesaDTO.getIdSesion() != null) {
             SesionesMesa sesion = sesionesMesaRepository.findById(pagosMesaDTO.getIdSesion())
@@ -84,6 +87,9 @@ public class PagosMesaService {
     }
 
     public PagosMesaDTO update(Integer id, PagosMesaDTO pagosMesaDTO) {
+        if (pagosMesaDTO.getImporte() != null && pagosMesaDTO.getImporte().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El importe del pago no puede ser negativo");
+        }
         PagosMesa existingPago = pagosMesaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pago de mesa con id " + id + " no encontrado"));
         if (pagosMesaDTO.getIdSesion() != null) {

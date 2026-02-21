@@ -2,6 +2,7 @@ package org.davide.ggbproyect.service;
 
 import org.davide.ggbproyect.models.Producto;
 import org.davide.ggbproyect.models.ProductoDTO;
+import org.davide.ggbproyect.repository.LineasComandaRepository;
 import org.davide.ggbproyect.repository.ProductoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,9 +20,12 @@ import java.util.stream.Collectors;
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final LineasComandaRepository lineasComandaRepository;
 
-    public ProductoService(ProductoRepository productoRepository) {
+    public ProductoService(ProductoRepository productoRepository,
+                           LineasComandaRepository lineasComandaRepository) {
         this.productoRepository = productoRepository;
+        this.lineasComandaRepository = lineasComandaRepository;
     }
 
     @Transactional(readOnly = true)
@@ -37,6 +42,9 @@ public class ProductoService {
     }
 
     public ProductoDTO create(ProductoDTO productoDTO) {
+        if (productoDTO.getPrecio() != null && productoDTO.getPrecio().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El precio del producto no puede ser negativo");
+        }
         if (productoRepository.existsByNombre(productoDTO.getNombre())) {
             throw new IllegalArgumentException("El nombre del producto esta duplicado ");
         }
@@ -69,6 +77,9 @@ public class ProductoService {
     public void delete(Integer id) {
         if (!productoRepository.existsById(id)) {
             throw new EntityNotFoundException("Producto con id " + id + " no encontrado");
+        }
+        if (!lineasComandaRepository.filter(null, id, org.springframework.data.domain.PageRequest.of(0, 1)).isEmpty()) {
+            throw new IllegalStateException("No se puede eliminar el producto porque esta referenciado en lineas de comanda");
         }
         productoRepository.deleteById(id);
     }

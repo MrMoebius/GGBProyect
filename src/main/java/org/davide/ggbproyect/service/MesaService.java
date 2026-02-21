@@ -50,6 +50,9 @@ public class MesaService {
     }
 
     public MesaDTO create(MesaDTO mesaDTO) {
+        if (mesaDTO.getCapacidad() != null && mesaDTO.getCapacidad() <= 0) {
+            throw new IllegalArgumentException("La capacidad de la mesa debe ser mayor que 0");
+        }
         Mesa mesa = mesaDTO.toEntity();
         if (mesaRepository.existsByNombreMesa(mesa.getNombreMesa())) {
             throw new IllegalArgumentException("Mesa ya existente");
@@ -62,6 +65,9 @@ public class MesaService {
     }
 
     public MesaDTO update(Integer id, MesaDTO mesaDTO) {
+        if (mesaDTO.getCapacidad() != null && mesaDTO.getCapacidad() <= 0) {
+            throw new IllegalArgumentException("La capacidad de la mesa debe ser mayor que 0");
+        }
         Mesa existingMesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Mesa con id " + id + " no encontrada"));
         if (mesaRepository.existsByNombreMesaAndIdNot(mesaDTO.getNombreMesa(), id)) {

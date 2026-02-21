@@ -49,6 +49,9 @@ public class LineasComandaService {
     }
 
     public LineasComandaDTO create(LineasComandaDTO lineasComandaDTO) {
+        if (lineasComandaDTO.getCantidad() != null && lineasComandaDTO.getCantidad() <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que 0");
+        }
         LineasComanda lineasComanda = lineasComandaDTO.toEntity();
         if (lineasComandaDTO.getIdComanda() != null) {
             Comanda comanda = comandaRepository.findById(lineasComandaDTO.getIdComanda())
@@ -66,6 +69,9 @@ public class LineasComandaService {
     }
 
     public LineasComandaDTO update(Integer id, LineasComandaDTO lineasComandaDTO) {
+        if (lineasComandaDTO.getCantidad() != null && lineasComandaDTO.getCantidad() <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que 0");
+        }
         LineasComanda existingLinea = lineasComandaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada"));
         if (lineasComandaDTO.getIdComanda() != null) {
@@ -144,7 +150,11 @@ public class LineasComandaService {
                 .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + idComanda + " no encontrada"));
         List<LineasComanda> lineas = lineasComandaRepository.findByIdComandaId(idComanda);
         BigDecimal total = lineas.stream()
-                .map(l -> l.getPrecioUnitarioHistorico().multiply(BigDecimal.valueOf(l.getCantidad())))
+                .map(l -> {
+                    BigDecimal precio = l.getPrecioUnitarioHistorico() != null ? l.getPrecioUnitarioHistorico() : BigDecimal.ZERO;
+                    int cantidad = l.getCantidad() != null ? l.getCantidad() : 0;
+                    return precio.multiply(BigDecimal.valueOf(cantidad));
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         comanda.setTotal(total);
         comandaRepository.save(comanda);
