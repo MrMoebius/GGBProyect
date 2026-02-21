@@ -40,11 +40,7 @@ public class JuegoService {
     }
 
     public JuegoDTO create(JuegoDTO juegoDTO) {
-        if (juegoDTO.getMinJugadores() != null && juegoDTO.getMaxJugadores() != null
-                && juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
-            throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
-        }
-
+        validarJugadores(juegoDTO);
         Juego juego = juegoDTO.toEntity();
         return new JuegoDTO(juegoRepository.save(juego));
     }
@@ -55,13 +51,9 @@ public class JuegoService {
     }
 
     public JuegoDTO update(Integer id, JuegoDTO juegoDTO) {
+        validarJugadores(juegoDTO);
         Juego existingJuego = juegoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Juego con id " + id + " no encontrado"));
-
-        if (juegoDTO.getMinJugadores() != null && juegoDTO.getMaxJugadores() != null
-                && juegoDTO.getMinJugadores() > juegoDTO.getMaxJugadores()) {
-            throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
-        }
         if (juegoRepository.existsByNombreAndIdNot(juegoDTO.getNombre(), id)) {
             throw new IllegalArgumentException("El nombre del juego esta duplicado ");
         }
@@ -98,6 +90,19 @@ public class JuegoService {
         existingJuego.setRecomendadoDosJugadores(juegoDTO.getRecomendadoDosJugadores());
         existingJuego.setActivo(juegoDTO.getActivo());
         return new JuegoDTO(juegoRepository.save(existingJuego));
+    }
+
+    private void validarJugadores(JuegoDTO dto) {
+        if (dto.getMinJugadores() != null && dto.getMinJugadores() < 0) {
+            throw new IllegalArgumentException("El minimo de jugadores no puede ser negativo");
+        }
+        if (dto.getMaxJugadores() != null && dto.getMaxJugadores() < 0) {
+            throw new IllegalArgumentException("El maximo de jugadores no puede ser negativo");
+        }
+        if (dto.getMinJugadores() != null && dto.getMaxJugadores() != null
+                && dto.getMinJugadores() > dto.getMaxJugadores()) {
+            throw new IllegalArgumentException("El minimo de jugadores no puede ser mayor que el maximo de jugadores");
+        }
     }
 
     @Transactional(readOnly = true)

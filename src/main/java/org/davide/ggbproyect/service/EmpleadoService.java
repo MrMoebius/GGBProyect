@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,9 @@ public class EmpleadoService {
     }
 
     public EmpleadoDTO create(EmpleadoDTO empleadoDTO) {
+        if (empleadoDTO.getFechaIngreso() != null && empleadoDTO.getFechaIngreso().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("La fecha de ingreso no puede ser en el futuro");
+        }
         empleadoRepository.findByEmail(empleadoDTO.getEmail())
                 .ifPresent(e -> {
                     throw new IllegalStateException("Ya existe un empleado con el email: " + empleadoDTO.getEmail());
@@ -64,6 +68,9 @@ public class EmpleadoService {
     }
 
     public EmpleadoDTO update(Integer id, EmpleadoDTO empleadoDTO) {
+        if (empleadoDTO.getFechaIngreso() != null && empleadoDTO.getFechaIngreso().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("La fecha de ingreso no puede ser en el futuro");
+        }
         Empleado existingEmpleado = empleadoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empleado con id " + id + " no encontrado"));
         empleadoRepository.findByEmail(empleadoDTO.getEmail())

@@ -156,7 +156,7 @@ public class ClienteService {
         }
 
         // Comprobamos si el token ha expirado
-        if (cliente.getTokenVerificacionExpira().isBefore(LocalDateTime.now())) {
+        if (cliente.getTokenVerificacionExpira() == null || cliente.getTokenVerificacionExpira().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("El token de verificación ha expirado. Solicita uno nuevo.");
         }
 
@@ -209,7 +209,7 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findByTokenRecuperacion(token)
                 .orElseThrow(() -> new IllegalArgumentException("Token de recuperación inválido"));
 
-        if (cliente.getTokenRecuperacionExpira().isBefore(LocalDateTime.now())) {
+        if (cliente.getTokenRecuperacionExpira() == null || cliente.getTokenRecuperacionExpira().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("El token de recuperación ha expirado. Solicita uno nuevo.");
         }
 

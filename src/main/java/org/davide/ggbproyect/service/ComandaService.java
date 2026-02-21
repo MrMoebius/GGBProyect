@@ -92,7 +92,7 @@ public class ComandaService {
                 throw new IllegalArgumentException(e.getMessage());
             }
         }
-        existingComanda.setTotal(comandaDTO.getTotal());
+        // No permitir sobreescribir el total manualmente; se recalcula desde LineasComandaService
         return new ComandaDTO(comandaRepository.save(existingComanda));
     }
 

@@ -53,6 +53,7 @@ public class LudotecaSesionesService {
     }
 
     public LudotecaSesionesDTO create(LudotecaSesionesDTO ludotecaSesionesDTO) {
+        validarParticipantes(ludotecaSesionesDTO);
         LudotecaSesiones ludotecaSesiones = ludotecaSesionesDTO.toEntity();
         if (ludotecaSesionesDTO.getIdSesion() != null) {
             SesionesMesa sesion = sesionesMesaRepository.findById(ludotecaSesionesDTO.getIdSesion())
@@ -68,6 +69,7 @@ public class LudotecaSesionesService {
     }
 
     public LudotecaSesionesDTO update(Integer id, LudotecaSesionesDTO ludotecaSesionesDTO) {
+        validarParticipantes(ludotecaSesionesDTO);
         LudotecaSesiones existingSesion = ludotecaSesionesRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Sesion de ludoteca con id " + id + " no encontrada"));
         if (ludotecaSesionesDTO.getIdSesion() != null) {
@@ -94,6 +96,18 @@ public class LudotecaSesionesService {
     public Page<LudotecaSesionesDTO> filter(Integer idSesion, Pageable pageable) {
         return ludotecaSesionesRepository.filter(idSesion, pageable)
                 .map(LudotecaSesionesDTO::new);
+    }
+
+    private void validarParticipantes(LudotecaSesionesDTO dto) {
+        if (dto.getNumAdultos() != null && dto.getNumAdultos() < 0) {
+            throw new IllegalArgumentException("El numero de adultos no puede ser negativo");
+        }
+        if (dto.getNumNinos613() != null && dto.getNumNinos613() < 0) {
+            throw new IllegalArgumentException("El numero de ninos (6-13) no puede ser negativo");
+        }
+        if (dto.getNumNinos05() != null && dto.getNumNinos05() < 0) {
+            throw new IllegalArgumentException("El numero de ninos (0-5) no puede ser negativo");
+        }
     }
 
     private void calcularImporteTarifa(LudotecaSesiones ludoteca) {

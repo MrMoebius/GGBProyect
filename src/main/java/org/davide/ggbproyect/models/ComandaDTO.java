@@ -28,6 +28,7 @@ public class ComandaDTO {
     @ValidEnum(enumClass = EstadoComanda.class, message = "Valor de estado invalido")
     private String estado;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal total;
 
     public ComandaDTO(Comanda entity) {

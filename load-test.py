@@ -1,5 +1,6 @@
 """
 Test de carga - Simula 30 usuarios concurrentes haciendo login + reservas
+Incluye pruebas con fechas pasadas para validar que el backend las rechaza (400+)
 Ejecutar: pip install requests && python load-test.py
 """
 
@@ -17,7 +18,7 @@ NUM_USUARIOS = 30
 TEST_EMAIL = "davidmorenov10@gmail.com"
 TEST_PASSWORD = "Atletico8"
 
-# Datos para la reserva de mesa
+# Datos para la reserva de mesa (fecha FUTURA - deberian funcionar)
 RESERVA_TEMPLATE = {
     "idCliente": 210003,
     "idMesa": 1,
@@ -26,10 +27,32 @@ RESERVA_TEMPLATE = {
     "numPersonas": 2,
     "notas": "Test de carga"
 }
+
+# Datos para reservas con fecha PASADA (deberian ser rechazadas con 400)
+RESERVA_PASADA_TEMPLATE = {
+    "idCliente": 210003,
+    "idMesa": 1,
+    "fechaHoraInicio": "2024-01-15T10:00:00Z",
+    "fechaHoraFin": "2024-01-15T12:00:00Z",
+    "numPersonas": 2,
+    "notas": "Test fecha pasada - debe fallar"
+}
+
+# Reserva con fecha inicio posterior a fecha fin (deberia ser rechazada con 400)
+RESERVA_INVERTIDA_TEMPLATE = {
+    "idCliente": 210003,
+    "idMesa": 1,
+    "fechaHoraInicio": "2026-06-15T20:00:00Z",
+    "fechaHoraFin": "2026-06-15T18:00:00Z",
+    "numPersonas": 2,
+    "notas": "Test fechas invertidas - debe fallar"
+}
 # ========================================
 
 resultados_login = {"ok": 0, "fail": 0, "tiempos": []}
 resultados_reserva = {"ok": 0, "fail": 0, "tiempos": []}
+resultados_pasadas = {"ok": 0, "fail": 0, "tiempos": [], "codigos": []}
+resultados_invertidas = {"ok": 0, "fail": 0, "tiempos": [], "codigos": []}
 lock = threading.Lock()
 tokens = []
 tokens_lock = threading.Lock()
@@ -93,6 +116,36 @@ def hacer_reserva(usuario_num, token):
         return f"  Reserva {usuario_num:02d}: ERROR {str(e)[:50]} ({duracion:.0f}ms)"
 
 
+def hacer_reserva_invalida(usuario_num, token, template, resultados, etiqueta):
+    """Envia una reserva que DEBE ser rechazada (fecha pasada o invertida)."""
+    inicio = time.time()
+    try:
+        headers = {"Authorization": f"Bearer {token}"}
+        resp = requests.post(
+            f"{BASE_URL}/api/reservas-mesa",
+            json=template,
+            headers=headers,
+            timeout=30
+        )
+        duracion = (time.time() - inicio) * 1000
+
+        with lock:
+            resultados["tiempos"].append(duracion)
+            resultados["codigos"].append(resp.status_code)
+            if resp.status_code >= 400:
+                resultados["ok"] += 1
+                return f"  {etiqueta} {usuario_num:02d}: RECHAZADA {resp.status_code} ({duracion:.0f}ms)"
+            else:
+                resultados["fail"] += 1
+                return f"  {etiqueta} {usuario_num:02d}: ATENCION! Aceptada {resp.status_code} ({duracion:.0f}ms)"
+    except Exception as e:
+        duracion = (time.time() - inicio) * 1000
+        with lock:
+            resultados["fail"] += 1
+            resultados["tiempos"].append(duracion)
+        return f"  {etiqueta} {usuario_num:02d}: ERROR {str(e)[:50]} ({duracion:.0f}ms)"
+
+
 def imprimir_resumen(nombre, resultados):
     tiempos = resultados["tiempos"]
     if not tiempos:
@@ -127,12 +180,67 @@ if __name__ == "__main__":
     print(f"\n  Tiempo total fase login: {tiempo_login:.2f}s")
     imprimir_resumen("Login", resultados_login)
 
-    # FASE 2: Reservas concurrentes
+    # FASE 2: Reservas con fechas PASADAS (DEBEN ser rechazadas)
     if tokens:
-        print(f"\n--- FASE 2: {len(tokens)} reservas simultaneas ---\n")
+        print(f"\n--- FASE 2: {NUM_USUARIOS} reservas con FECHA PASADA (deben fallar con 400) ---\n")
         inicio_total = time.time()
 
-        # Reutilizar tokens ciclicamente si hay menos de NUM_USUARIOS
+        tokens_ciclicos = [tokens[i % len(tokens)] for i in range(NUM_USUARIOS)]
+
+        with ThreadPoolExecutor(max_workers=NUM_USUARIOS) as executor:
+            futuros = {
+                executor.submit(hacer_reserva_invalida, i + 1, tokens_ciclicos[i],
+                                RESERVA_PASADA_TEMPLATE, resultados_pasadas, "Pasada"): i
+                for i in range(NUM_USUARIOS)
+            }
+            for futuro in as_completed(futuros):
+                print(futuro.result())
+
+        tiempo_pasadas = time.time() - inicio_total
+        print(f"\n  Tiempo total fase fechas pasadas: {tiempo_pasadas:.2f}s")
+        rechazadas = resultados_pasadas["ok"]
+        total = rechazadas + resultados_pasadas["fail"]
+        print(f"  Rechazadas correctamente: {rechazadas}/{total}")
+        if resultados_pasadas["fail"] > 0:
+            print(f"  !! ATENCION: {resultados_pasadas['fail']} reservas pasadas fueron ACEPTADAS (bug!)")
+        else:
+            print(f"  VALIDACION OK: Todas las reservas con fecha pasada fueron rechazadas")
+    else:
+        print("\n  No se obtuvieron tokens, saltando fase de fechas pasadas.")
+
+    # FASE 3: Reservas con fechas INVERTIDAS (inicio > fin, DEBEN ser rechazadas)
+    if tokens:
+        print(f"\n--- FASE 3: {NUM_USUARIOS} reservas con FECHAS INVERTIDAS (deben fallar con 400) ---\n")
+        inicio_total = time.time()
+
+        tokens_ciclicos = [tokens[i % len(tokens)] for i in range(NUM_USUARIOS)]
+
+        with ThreadPoolExecutor(max_workers=NUM_USUARIOS) as executor:
+            futuros = {
+                executor.submit(hacer_reserva_invalida, i + 1, tokens_ciclicos[i],
+                                RESERVA_INVERTIDA_TEMPLATE, resultados_invertidas, "Invertida"): i
+                for i in range(NUM_USUARIOS)
+            }
+            for futuro in as_completed(futuros):
+                print(futuro.result())
+
+        tiempo_invertidas = time.time() - inicio_total
+        print(f"\n  Tiempo total fase fechas invertidas: {tiempo_invertidas:.2f}s")
+        rechazadas = resultados_invertidas["ok"]
+        total = rechazadas + resultados_invertidas["fail"]
+        print(f"  Rechazadas correctamente: {rechazadas}/{total}")
+        if resultados_invertidas["fail"] > 0:
+            print(f"  !! ATENCION: {resultados_invertidas['fail']} reservas invertidas fueron ACEPTADAS (bug!)")
+        else:
+            print(f"  VALIDACION OK: Todas las reservas con fechas invertidas fueron rechazadas")
+    else:
+        print("\n  No se obtuvieron tokens, saltando fase de fechas invertidas.")
+
+    # FASE 4: Reservas con fechas FUTURAS validas (deben funcionar)
+    if tokens:
+        print(f"\n--- FASE 4: {NUM_USUARIOS} reservas con FECHA FUTURA valida ---\n")
+        inicio_total = time.time()
+
         tokens_ciclicos = [tokens[i % len(tokens)] for i in range(NUM_USUARIOS)]
 
         with ThreadPoolExecutor(max_workers=NUM_USUARIOS) as executor:
@@ -144,8 +252,8 @@ if __name__ == "__main__":
                 print(futuro.result())
 
         tiempo_reserva = time.time() - inicio_total
-        print(f"\n  Tiempo total fase reservas: {tiempo_reserva:.2f}s")
-        imprimir_resumen("Reservas", resultados_reserva)
+        print(f"\n  Tiempo total fase reservas validas: {tiempo_reserva:.2f}s")
+        imprimir_resumen("Reservas validas", resultados_reserva)
     else:
         print("\n  No se obtuvieron tokens, saltando fase de reservas.")
 
@@ -155,6 +263,20 @@ if __name__ == "__main__":
     print("=" * 50)
     print("\n  LOGIN:")
     imprimir_resumen("Login", resultados_login)
-    print("\n  RESERVAS:")
+    print("\n  RESERVAS FECHA PASADA (esperado: todas rechazadas):")
+    rechazadas = resultados_pasadas["ok"]
+    total_p = rechazadas + resultados_pasadas["fail"]
+    print(f"  Rechazadas: {rechazadas}/{total_p}")
+    if resultados_pasadas["codigos"]:
+        codigos_set = set(resultados_pasadas["codigos"])
+        print(f"  Codigos HTTP recibidos: {codigos_set}")
+    print("\n  RESERVAS FECHAS INVERTIDAS (esperado: todas rechazadas):")
+    rechazadas_i = resultados_invertidas["ok"]
+    total_i = rechazadas_i + resultados_invertidas["fail"]
+    print(f"  Rechazadas: {rechazadas_i}/{total_i}")
+    if resultados_invertidas["codigos"]:
+        codigos_set_i = set(resultados_invertidas["codigos"])
+        print(f"  Codigos HTTP recibidos: {codigos_set_i}")
+    print("\n  RESERVAS VALIDAS:")
     imprimir_resumen("Reservas", resultados_reserva)
     print()
