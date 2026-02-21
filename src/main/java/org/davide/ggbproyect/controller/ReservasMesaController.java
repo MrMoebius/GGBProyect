@@ -69,7 +69,7 @@ public class ReservasMesaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ReservasMesaDTO> create(@Valid @RequestBody ReservasMesaDTO reservasMesaDTO) {
         ReservasMesaDTO created = reservasMesaService.create(reservasMesaDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()

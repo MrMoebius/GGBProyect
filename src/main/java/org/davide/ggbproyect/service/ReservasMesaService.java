@@ -66,8 +66,7 @@ public class ReservasMesaService {
     public ReservasMesaDTO create(ReservasMesaDTO reservasMesaDTO) {
         ReservasMesa reservasMesa = reservasMesaDTO.toEntity();
 
-        if (reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin()))
-        {
+        if (reservasMesaDTO.getFechaHoraFin() != null && reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
             throw new IllegalArgumentException("La fecha de inicio no puede ser despues que la de final");
         }
         if (reservasMesaDTO.getIdCliente() != null) {
@@ -92,7 +91,7 @@ public class ReservasMesaService {
         ReservasMesa existingReserva = reservasMesaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Reserva de mesa con id " + id + " no encontrada"));
 
-        if (reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
+        if (reservasMesaDTO.getFechaHoraFin() != null && reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
             throw new IllegalArgumentException("La fecha de inicio no puede ser despues que la de final");
         }
 
