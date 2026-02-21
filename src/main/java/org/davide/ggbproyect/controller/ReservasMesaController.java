@@ -7,11 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reservas-mesa")
@@ -44,6 +46,26 @@ public class ReservasMesaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ReservasMesaDTO> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(reservasMesaService.getById(id));
+    }
+
+    @GetMapping("/mis-reservas")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<List<ReservasMesaDTO>> getMisReservas(Authentication auth) {
+        return ResponseEntity.ok(reservasMesaService.getMisReservas(auth.getName()));
+    }
+
+    @PostMapping("/{id}/cancelar-cliente")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<ReservasMesaDTO> cancelarByCliente(@PathVariable Integer id, Authentication auth) {
+        return ResponseEntity.ok(reservasMesaService.cancelarByCliente(id, auth.getName()));
+    }
+
+    @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    public ResponseEntity<ReservasMesaDTO> changeEstado(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+        String estado = body.get("estado");
+        if (estado == null) throw new IllegalArgumentException("El campo 'estado' es obligatorio");
+        return ResponseEntity.ok(reservasMesaService.changeEstado(id, estado));
     }
 
     @PostMapping

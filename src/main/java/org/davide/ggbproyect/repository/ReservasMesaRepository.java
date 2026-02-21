@@ -14,6 +14,9 @@ import java.util.List;
 @Repository
 public interface ReservasMesaRepository extends JpaRepository<ReservasMesa, Integer> {
 
+    @EntityGraph(attributePaths = {"idCliente", "idMesa", "idJuegoDeseado"})
+    List<ReservasMesa> findByIdClienteId(Integer idCliente);
+
     @Override
     @EntityGraph(attributePaths = {"idCliente", "idMesa", "idJuegoDeseado"})
     Page<ReservasMesa> findAll(Pageable pageable);
