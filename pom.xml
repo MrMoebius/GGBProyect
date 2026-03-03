@@ -51,7 +51,7 @@
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
-        <!-- Dependencia para envío de emails (basicamente eslo de la verificación de cuenta) -->
+        <!-- Dependencia para envío de emails (verificación de cuenta) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>

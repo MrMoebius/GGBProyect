@@ -23,11 +23,9 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    // Email remitente (el mismo configurado en spring.mail.username)
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    // URL base para construir el enlace de verificación
     @Value("${app.email-verification.base-url}")
     private String baseUrl;
 
@@ -40,12 +38,9 @@ public class EmailService {
      * @param token        token UUID de verificación
      */
     public void enviarEmailVerificacion(String destinatario, String nombre, String token) {
-        // Construir el enlace que apunta al frontend de Angular (no al backend)
-        // El frontend mostrará el formulario de contraseña y luego llamará al backend
         String enlace = baseUrl + "/auth/verificar-email?token=" + token;
         String asunto = "Verifica tu cuenta - GGBProyect";
 
-        // Plantilla HTML del email de verificación (me lo ha hecho chati)
         String contenido = """
                 <html>
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -72,7 +67,6 @@ public class EmailService {
             helper.setFrom(fromEmail);
             helper.setTo(destinatario);
             helper.setSubject(asunto);
-            // true = contenido HTML
             helper.setText(contenido, true);
             mailSender.send(message);
             log.info("Email de verificación enviado correctamente a: {}", destinatario);
