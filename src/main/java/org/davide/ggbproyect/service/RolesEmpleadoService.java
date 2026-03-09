@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,9 @@ public class RolesEmpleadoService {
     }
 
     public RolesEmpleadoDTO create(RolesEmpleadoDTO rolesEmpleadoDTO) {
+        if (rolesEmpleadoRepository.existsByNombreRol(rolesEmpleadoDTO.getNombreRol())) {
+            throw new IllegalArgumentException("El nombre del rol esta duplicado ");
+        }
         RolesEmpleado rolesEmpleado = rolesEmpleadoDTO.toEntity();
         return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(rolesEmpleado));
     }
@@ -47,7 +51,11 @@ public class RolesEmpleadoService {
     public RolesEmpleadoDTO update(Integer id, RolesEmpleadoDTO rolesEmpleadoDTO) {
         RolesEmpleado existingRol = rolesEmpleadoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Rol de empleado con id " + id + " no encontrado"));
+        if (rolesEmpleadoRepository.existsByNombreRolAndIdNot(rolesEmpleadoDTO.getNombreRol(), id)) {
+            throw new IllegalArgumentException("El nombre del rol esta duplicado ");
+        }
         existingRol.setNombreRol(rolesEmpleadoDTO.getNombreRol());
+
         return new RolesEmpleadoDTO(rolesEmpleadoRepository.save(existingRol));
     }
 

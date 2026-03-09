@@ -22,7 +22,8 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, Integer> {
     Optional<Empleado> findByEmail(@Param("email") String email);
     boolean existsByIdRol_Id(Integer idRol);
 
-    @Query("SELECT e FROM Empleado e LEFT JOIN FETCH e.idRol WHERE " +
+    @EntityGraph(attributePaths = {"idRol"})
+    @Query("SELECT e FROM Empleado e WHERE " +
            "(:nombre IS NULL OR LOWER(e.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) AND " +
            "(:email IS NULL OR LOWER(e.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
            "(:idRol IS NULL OR e.idRol.id = :idRol) AND " +

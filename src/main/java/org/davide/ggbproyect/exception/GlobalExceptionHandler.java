@@ -124,7 +124,8 @@ public class GlobalExceptionHandler {
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", "Parametro invalido");
-        body.put("message", "El parametro '" + ex.getName() + "' debe ser de tipo " + ex.getRequiredType().getSimpleName());
+        String requiredType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "desconocido";
+        body.put("message", "El parametro '" + ex.getName() + "' debe ser de tipo " + requiredType);
 
         return ResponseEntity.badRequest().body(body);
     }
@@ -147,8 +148,7 @@ public class GlobalExceptionHandler {
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("error", "Error interno del servidor");
-        body.put("message", ex.getMessage());
-        body.put("exception", ex.getClass().getName());
+        body.put("message", "Ha ocurrido un error inesperado");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }

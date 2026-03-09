@@ -17,4 +17,10 @@ public interface RolesEmpleadoRepository extends JpaRepository<RolesEmpleado, In
            "(:nombreRol IS NULL OR LOWER(e.nombreRol) LIKE LOWER(CONCAT('%', :nombreRol, '%')))")
     Page<RolesEmpleado> filter(@Param("nombreRol") String nombreRol,
                                Pageable pageable);
+
+    java.util.Optional<RolesEmpleado> findByNombreRol(String nombreRol);
+
+    boolean existsByNombreRol(String nombreRol);
+
+    boolean existsByNombreRolAndIdNot(String nombreRol, Integer id);
 }

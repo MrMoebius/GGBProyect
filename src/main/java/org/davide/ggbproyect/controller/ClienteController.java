@@ -76,7 +76,7 @@ public class ClienteController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ClienteDTO> create(@Valid @RequestBody ClienteDTO clienteDTO) {
         ClienteDTO created = clienteService.create(clienteDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -87,7 +87,7 @@ public class ClienteController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<ClienteDTO> update(@PathVariable Integer id, @Valid @RequestBody ClienteDTO clienteDTO) {
         return ResponseEntity.ok(clienteService.update(id, clienteDTO));
     }
@@ -95,13 +95,28 @@ public class ClienteController {
     @PutMapping("/{id}/password")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO', 'CLIENTE')")
     public ResponseEntity<Void> changePassword(@PathVariable Integer id,
-                                                @Valid @RequestBody ChangePasswordDTO dto) {
+                                                @Valid @RequestBody ChangePasswordDTO dto,
+                                                org.springframework.security.core.Authentication authentication) {
+        String currentUserEmail = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isEmpleado = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLEADO"));
+
+        if (!isAdmin && !isEmpleado) {
+            ClienteDTO cliente = clienteService.getById(id);
+            if (!cliente.getEmail().equals(currentUserEmail)) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "No tiene permisos para cambiar la contraseña de otro usuario");
+            }
+        }
+
         clienteService.changePassword(id, dto.getCurrentPassword(), dto.getNewPassword());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         clienteService.delete(id);
         return ResponseEntity.noContent().build();
@@ -127,7 +142,9 @@ public class ClienteController {
 
         String ext = TYPE_TO_EXT.get(contentType);
         Path target = uploadDir.resolve(id + ext);
-        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         return ResponseEntity.ok(Map.of("message", "Foto de perfil actualizada"));
     }

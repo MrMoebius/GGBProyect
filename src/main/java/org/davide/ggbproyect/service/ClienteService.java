@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.davide.ggbproyect.models.Cliente;
 import org.davide.ggbproyect.models.ClienteDTO;
 import org.davide.ggbproyect.repository.ClienteRepository;
-import org.slf4j.Logger; //los logger son imports necesarios junto a los de la linea 18 y 19
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -156,7 +156,7 @@ public class ClienteService {
         }
 
         // Comprobamos si el token ha expirado
-        if (cliente.getTokenVerificacionExpira().isBefore(LocalDateTime.now())) {
+        if (cliente.getTokenVerificacionExpira() == null || cliente.getTokenVerificacionExpira().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("El token de verificación ha expirado. Solicita uno nuevo.");
         }
 
@@ -187,6 +187,36 @@ public class ClienteService {
         clienteRepository.save(cliente);
 
         emailService.enviarEmailVerificacion(cliente.getEmail(), cliente.getNombre(), token);
+    }
+
+    public void solicitarRecuperacion(String email) {
+        Cliente cliente = clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró un cliente con el email: " + email));
+
+        if (!Boolean.TRUE.equals(cliente.getEmailVerificado())) {
+            throw new IllegalStateException("El email no ha sido verificado. Debes verificar tu cuenta primero.");
+        }
+
+        String token = UUID.randomUUID().toString();
+        cliente.setTokenRecuperacion(token);
+        cliente.setTokenRecuperacionExpira(LocalDateTime.now().plusHours(1));
+        clienteRepository.save(cliente);
+
+        emailService.enviarEmailRecuperacion(cliente.getEmail(), cliente.getNombre(), token);
+    }
+
+    public void recuperarPassword(String token, String newPassword) {
+        Cliente cliente = clienteRepository.findByTokenRecuperacion(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token de recuperación inválido"));
+
+        if (cliente.getTokenRecuperacionExpira() == null || cliente.getTokenRecuperacionExpira().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("El token de recuperación ha expirado. Solicita uno nuevo.");
+        }
+
+        cliente.setPassword(passwordEncoder.encode(newPassword));
+        cliente.setTokenRecuperacion(null);
+        cliente.setTokenRecuperacionExpira(null);
+        clienteRepository.save(cliente);
     }
 
     public void delete(Integer id) {

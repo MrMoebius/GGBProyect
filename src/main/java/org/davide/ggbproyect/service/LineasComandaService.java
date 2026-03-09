@@ -1,9 +1,8 @@
 package org.davide.ggbproyect.service;
 
-import org.davide.ggbproyect.models.Comanda;
-import org.davide.ggbproyect.models.LineasComanda;
-import org.davide.ggbproyect.models.LineasComandaDTO;
-import org.davide.ggbproyect.models.Producto;
+import org.davide.ggbproyect.models.*;
+import org.davide.ggbproyect.models.enums.EstadoComanda;
+import org.davide.ggbproyect.repository.ClienteRepository;
 import org.davide.ggbproyect.repository.ComandaRepository;
 import org.davide.ggbproyect.repository.LineasComandaRepository;
 import org.davide.ggbproyect.repository.ProductoRepository;
@@ -14,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -24,13 +23,16 @@ public class LineasComandaService {
     private final LineasComandaRepository lineasComandaRepository;
     private final ComandaRepository comandaRepository;
     private final ProductoRepository productoRepository;
+    private final ClienteRepository clienteRepository;
 
     public LineasComandaService(LineasComandaRepository lineasComandaRepository,
                                 ComandaRepository comandaRepository,
-                                ProductoRepository productoRepository) {
+                                ProductoRepository productoRepository,
+                                ClienteRepository clienteRepository) {
         this.lineasComandaRepository = lineasComandaRepository;
         this.comandaRepository = comandaRepository;
         this.productoRepository = productoRepository;
+        this.clienteRepository = clienteRepository;
     }
 
     @Transactional(readOnly = true)
@@ -47,6 +49,9 @@ public class LineasComandaService {
     }
 
     public LineasComandaDTO create(LineasComandaDTO lineasComandaDTO) {
+        if (lineasComandaDTO.getCantidad() != null && lineasComandaDTO.getCantidad() <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que 0");
+        }
         LineasComanda lineasComanda = lineasComandaDTO.toEntity();
         if (lineasComandaDTO.getIdComanda() != null) {
             Comanda comanda = comandaRepository.findById(lineasComandaDTO.getIdComanda())
@@ -58,10 +63,15 @@ public class LineasComandaService {
                     .orElseThrow(() -> new EntityNotFoundException("Producto con id " + lineasComandaDTO.getIdProducto() + " no encontrado"));
             lineasComanda.setIdProducto(producto);
         }
-        return new LineasComandaDTO(lineasComandaRepository.save(lineasComanda));
+        LineasComandaDTO saved = new LineasComandaDTO(lineasComandaRepository.save(lineasComanda));
+        recalcularTotalComanda(lineasComanda.getIdComanda().getId());
+        return saved;
     }
 
     public LineasComandaDTO update(Integer id, LineasComandaDTO lineasComandaDTO) {
+        if (lineasComandaDTO.getCantidad() != null && lineasComandaDTO.getCantidad() <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que 0");
+        }
         LineasComanda existingLinea = lineasComandaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada"));
         if (lineasComandaDTO.getIdComanda() != null) {
@@ -78,7 +88,9 @@ public class LineasComandaService {
         existingLinea.setPrecioUnitarioHistorico(lineasComandaDTO.getPrecioUnitarioHistorico());
         existingLinea.setEstadoPreparacion(lineasComandaDTO.getEstadoPreparacion());
         existingLinea.setNotasChef(lineasComandaDTO.getNotasChef());
-        return new LineasComandaDTO(lineasComandaRepository.save(existingLinea));
+        LineasComandaDTO saved = new LineasComandaDTO(lineasComandaRepository.save(existingLinea));
+        recalcularTotalComanda(existingLinea.getIdComanda().getId());
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -88,9 +100,63 @@ public class LineasComandaService {
     }
 
     public void delete(Integer id) {
-        if (!lineasComandaRepository.existsById(id)) {
-            throw new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada");
-        }
+        LineasComanda linea = lineasComandaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada"));
+        Integer idComanda = linea.getIdComanda().getId();
         lineasComandaRepository.deleteById(id);
+        recalcularTotalComanda(idComanda);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LineasComandaDTO> getByComandaId(Integer idComanda) {
+        return lineasComandaRepository.findByIdComandaId(idComanda).stream()
+                .map(LineasComandaDTO::new)
+                .toList();
+    }
+
+    public LineasComandaDTO createByCliente(LineasComandaDTO dto, String emailCliente) {
+        Cliente cliente = clienteRepository.findByEmail(emailCliente)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        Comanda comanda = comandaRepository.findById(dto.getIdComanda())
+                .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + dto.getIdComanda() + " no encontrada"));
+        SesionesMesa sesion = comanda.getIdSesion();
+        if (sesion.getIdCliente() == null || !sesion.getIdCliente().getId().equals(cliente.getId())) {
+            throw new IllegalStateException("No tienes permiso para modificar esta comanda");
+        }
+        if (comanda.getEstado() != EstadoComanda.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden modificar comandas pendientes");
+        }
+        return create(dto);
+    }
+
+    public void deleteByCliente(Integer id, String emailCliente) {
+        Cliente cliente = clienteRepository.findByEmail(emailCliente)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        LineasComanda linea = lineasComandaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Linea de comanda con id " + id + " no encontrada"));
+        Comanda comanda = linea.getIdComanda();
+        SesionesMesa sesion = comanda.getIdSesion();
+        if (sesion.getIdCliente() == null || !sesion.getIdCliente().getId().equals(cliente.getId())) {
+            throw new IllegalStateException("No tienes permiso para modificar esta comanda");
+        }
+        if (comanda.getEstado() != EstadoComanda.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden modificar comandas pendientes");
+        }
+        delete(id);
+    }
+
+    private void recalcularTotalComanda(Integer idComanda) {
+        Comanda comanda = comandaRepository.findById(idComanda)
+                .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + idComanda + " no encontrada"));
+        List<LineasComanda> lineas = lineasComandaRepository.findByIdComandaId(idComanda);
+        BigDecimal total = lineas.stream()
+                .map(l -> {
+                    BigDecimal precio = l.getPrecioUnitarioHistorico() != null ? l.getPrecioUnitarioHistorico() : BigDecimal.ZERO;
+                    int cantidad = l.getCantidad() != null ? l.getCantidad() : 0;
+                    return precio.multiply(BigDecimal.valueOf(cantidad));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        comanda.setTotal(total);
+        comandaRepository.save(comanda);
     }
 }

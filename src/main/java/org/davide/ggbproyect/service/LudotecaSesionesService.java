@@ -4,9 +4,11 @@ import org.davide.ggbproyect.models.Comanda;
 import org.davide.ggbproyect.models.LudotecaSesiones;
 import org.davide.ggbproyect.models.LudotecaSesionesDTO;
 import org.davide.ggbproyect.models.SesionesMesa;
+import org.davide.ggbproyect.models.TarifasLudoteca;
 import org.davide.ggbproyect.repository.ComandaRepository;
 import org.davide.ggbproyect.repository.LudotecaSesionesRepository;
 import org.davide.ggbproyect.repository.SesionesMesaRepository;
+import org.davide.ggbproyect.repository.TarifasLudotecaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,8 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -24,13 +27,16 @@ public class LudotecaSesionesService {
     private final LudotecaSesionesRepository ludotecaSesionesRepository;
     private final SesionesMesaRepository sesionesMesaRepository;
     private final ComandaRepository comandaRepository;
+    private final TarifasLudotecaRepository tarifasLudotecaRepository;
 
     public LudotecaSesionesService(LudotecaSesionesRepository ludotecaSesionesRepository,
                                    SesionesMesaRepository sesionesMesaRepository,
-                                   ComandaRepository comandaRepository) {
+                                   ComandaRepository comandaRepository,
+                                   TarifasLudotecaRepository tarifasLudotecaRepository) {
         this.ludotecaSesionesRepository = ludotecaSesionesRepository;
         this.sesionesMesaRepository = sesionesMesaRepository;
         this.comandaRepository = comandaRepository;
+        this.tarifasLudotecaRepository = tarifasLudotecaRepository;
     }
 
     @Transactional(readOnly = true)
@@ -47,6 +53,7 @@ public class LudotecaSesionesService {
     }
 
     public LudotecaSesionesDTO create(LudotecaSesionesDTO ludotecaSesionesDTO) {
+        validarParticipantes(ludotecaSesionesDTO);
         LudotecaSesiones ludotecaSesiones = ludotecaSesionesDTO.toEntity();
         if (ludotecaSesionesDTO.getIdSesion() != null) {
             SesionesMesa sesion = sesionesMesaRepository.findById(ludotecaSesionesDTO.getIdSesion())
@@ -62,6 +69,7 @@ public class LudotecaSesionesService {
     }
 
     public LudotecaSesionesDTO update(Integer id, LudotecaSesionesDTO ludotecaSesionesDTO) {
+        validarParticipantes(ludotecaSesionesDTO);
         LudotecaSesiones existingSesion = ludotecaSesionesRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Sesion de ludoteca con id " + id + " no encontrada"));
         if (ludotecaSesionesDTO.getIdSesion() != null) {
@@ -72,7 +80,6 @@ public class LudotecaSesionesService {
         existingSesion.setNumAdultos(ludotecaSesionesDTO.getNumAdultos());
         existingSesion.setNumNinos613(ludotecaSesionesDTO.getNumNinos613());
         existingSesion.setNumNinos05(ludotecaSesionesDTO.getNumNinos05());
-        existingSesion.setImporteTotal(ludotecaSesionesDTO.getImporteTotal());
         if (ludotecaSesionesDTO.getIdComandaLudoteca() != null) {
             Comanda comanda = comandaRepository.findById(ludotecaSesionesDTO.getIdComandaLudoteca())
                     .orElseThrow(() -> new EntityNotFoundException("Comanda con id " + ludotecaSesionesDTO.getIdComandaLudoteca() + " no encontrada"));
@@ -80,8 +87,8 @@ public class LudotecaSesionesService {
         } else {
             existingSesion.setIdComandaLudoteca(null);
         }
-        existingSesion.setFechaCalculo(ludotecaSesionesDTO.getFechaCalculo());
         existingSesion.setNotas(ludotecaSesionesDTO.getNotas());
+        calcularImporteTarifa(existingSesion);
         return new LudotecaSesionesDTO(ludotecaSesionesRepository.save(existingSesion));
     }
 
@@ -89,6 +96,42 @@ public class LudotecaSesionesService {
     public Page<LudotecaSesionesDTO> filter(Integer idSesion, Pageable pageable) {
         return ludotecaSesionesRepository.filter(idSesion, pageable)
                 .map(LudotecaSesionesDTO::new);
+    }
+
+    private void validarParticipantes(LudotecaSesionesDTO dto) {
+        if (dto.getNumAdultos() != null && dto.getNumAdultos() < 0) {
+            throw new IllegalArgumentException("El numero de adultos no puede ser negativo");
+        }
+        if (dto.getNumNinos613() != null && dto.getNumNinos613() < 0) {
+            throw new IllegalArgumentException("El numero de ninos (6-13) no puede ser negativo");
+        }
+        if (dto.getNumNinos05() != null && dto.getNumNinos05() < 0) {
+            throw new IllegalArgumentException("El numero de ninos (0-5) no puede ser negativo");
+        }
+    }
+
+    private void calcularImporteTarifa(LudotecaSesiones ludoteca) {
+        List<TarifasLudoteca> tarifas = tarifasLudotecaRepository.findByActivoTrue();
+        BigDecimal total = BigDecimal.ZERO;
+
+        int numAdultos = ludoteca.getNumAdultos() != null ? ludoteca.getNumAdultos() : 0;
+        int numNinos613 = ludoteca.getNumNinos613() != null ? ludoteca.getNumNinos613() : 0;
+        int numNinos05 = ludoteca.getNumNinos05() != null ? ludoteca.getNumNinos05() : 0;
+
+        for (TarifasLudoteca tarifa : tarifas) {
+            int edadMin = tarifa.getEdadMin();
+            int edadMax = tarifa.getEdadMax();
+            if (edadMin >= 18) {
+                total = total.add(tarifa.getPrecio().multiply(BigDecimal.valueOf(numAdultos)));
+            } else if (edadMin >= 6) {
+                total = total.add(tarifa.getPrecio().multiply(BigDecimal.valueOf(numNinos613)));
+            } else {
+                total = total.add(tarifa.getPrecio().multiply(BigDecimal.valueOf(numNinos05)));
+            }
+        }
+
+        ludoteca.setImporteTotal(total);
+        ludoteca.setFechaCalculo(Instant.now());
     }
 
     public void delete(Integer id) {

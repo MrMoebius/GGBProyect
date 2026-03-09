@@ -44,7 +44,7 @@ public class EventoImagenController {
     }
 
     @PostMapping("/{id}/imagen")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> uploadImagen(@PathVariable Integer id,
                                           @RequestParam("file") MultipartFile file) throws IOException {
         String contentType = file.getContentType();
@@ -59,7 +59,9 @@ public class EventoImagenController {
 
         String ext = TYPE_TO_EXT.get(contentType);
         Path target = uploadDir.resolve(id + ext);
-        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         log.info("Imagen subida para evento {}: {}", id, target.getFileName());
         return ResponseEntity.ok(Map.of("message", "Imagen subida correctamente"));
@@ -83,7 +85,7 @@ public class EventoImagenController {
     }
 
     @DeleteMapping("/{id}/imagen")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> deleteImagen(@PathVariable Integer id) throws IOException {
         boolean deleted = deleteExistingImage(id);
         if (deleted) {

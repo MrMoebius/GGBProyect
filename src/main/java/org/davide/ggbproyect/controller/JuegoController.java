@@ -75,8 +75,15 @@ public class JuegoController {
         return ResponseEntity.ok(juegoService.getById(id));
     }
 
+    @GetMapping("/exists")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    public ResponseEntity<Map<String, Boolean>> existsByNombre(@RequestParam String nombre) {
+        boolean exists = juegoService.existsByNombre(nombre);
+        return ResponseEntity.ok(Map.of("exists", exists));
+    }
+
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<JuegoDTO> create(@Valid @RequestBody JuegoDTO juegoDTO) {
         JuegoDTO created = juegoService.create(juegoDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -87,13 +94,13 @@ public class JuegoController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<JuegoDTO> update(@PathVariable Integer id, @Valid @RequestBody JuegoDTO juegoDTO) {
         return ResponseEntity.ok(juegoService.update(id, juegoDTO));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         juegoService.delete(id);
         return ResponseEntity.noContent().build();
@@ -102,7 +109,7 @@ public class JuegoController {
     // === Imagen endpoints ===
 
     @PostMapping("/{id}/imagen")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> uploadImagen(@PathVariable Integer id,
                                           @RequestParam("file") MultipartFile file) throws IOException {
         // Verificar que el juego existe
@@ -123,10 +130,28 @@ public class JuegoController {
         // Guardar con la extension correcta
         String ext = TYPE_TO_EXT.get(contentType);
         Path target = uploadDir.resolve(id + ext);
-        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         log.info("Imagen subida para juego {}: {}", id, target.getFileName());
         return ResponseEntity.ok(Map.of("message", "Imagen subida correctamente"));
+    }
+
+    @PostMapping("/{targetId}/copy-imagen/{sourceId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    public ResponseEntity<?> copyImagen(@PathVariable Integer targetId, @PathVariable Integer sourceId) throws IOException {
+        juegoService.getById(targetId);
+        Path sourceImage = findImageFile(sourceId);
+        if (sourceImage == null) {
+            return ResponseEntity.notFound().build();
+        }
+        deleteExistingImage(targetId);
+        String fileName = sourceImage.getFileName().toString();
+        String ext = fileName.substring(fileName.lastIndexOf('.'));
+        Path target = uploadDir.resolve(targetId + ext);
+        Files.copy(sourceImage, target, StandardCopyOption.REPLACE_EXISTING);
+        return ResponseEntity.ok(Map.of("message", "Imagen copiada correctamente"));
     }
 
     @GetMapping("/{id}/imagen")
@@ -147,7 +172,7 @@ public class JuegoController {
     }
 
     @DeleteMapping("/{id}/imagen")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> deleteImagen(@PathVariable Integer id) throws IOException {
         boolean deleted = deleteExistingImage(id);
         if (deleted) {

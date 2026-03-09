@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,19 +38,33 @@ public class TarifasLudotecaService {
     }
 
     public TarifasLudotecaDTO create(TarifasLudotecaDTO tarifasLudotecaDTO) {
+        if (tarifasLudotecaDTO.getPrecio() != null && tarifasLudotecaDTO.getPrecio().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El precio de la tarifa no puede ser negativo");
+        }
+        if (tarifasLudotecaDTO.getEdadMin() > tarifasLudotecaDTO.getEdadMax()) {
+            throw new IllegalArgumentException("La edad minima no puede ser mayor que la maxima");
+        }
         TarifasLudoteca tarifasLudoteca = tarifasLudotecaDTO.toEntity();
         return new TarifasLudotecaDTO(tarifasLudotecaRepository.save(tarifasLudoteca));
     }
 
     public TarifasLudotecaDTO update(Integer id, TarifasLudotecaDTO tarifasLudotecaDTO) {
+        if (tarifasLudotecaDTO.getPrecio() != null && tarifasLudotecaDTO.getPrecio().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El precio de la tarifa no puede ser negativo");
+        }
+        if (tarifasLudotecaDTO.getEdadMin() > tarifasLudotecaDTO.getEdadMax()) {
+            throw new IllegalArgumentException("La edad minima no puede ser mayor que la maxima");
+        }
         TarifasLudoteca existingTarifa = tarifasLudotecaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tarifa de ludoteca con id " + id + " no encontrada"));
+
         existingTarifa.setNombreTramo(tarifasLudotecaDTO.getNombreTramo());
         existingTarifa.setEdadMin(tarifasLudotecaDTO.getEdadMin());
         existingTarifa.setEdadMax(tarifasLudotecaDTO.getEdadMax());
         existingTarifa.setPrecio(tarifasLudotecaDTO.getPrecio());
         existingTarifa.setActivo(tarifasLudotecaDTO.getActivo());
         existingTarifa.setDescripcion(tarifasLudotecaDTO.getDescripcion());
+
         return new TarifasLudotecaDTO(tarifasLudotecaRepository.save(existingTarifa));
     }
 

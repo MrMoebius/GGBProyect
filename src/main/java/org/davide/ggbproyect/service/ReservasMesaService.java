@@ -7,6 +7,9 @@ import org.davide.ggbproyect.models.ReservasMesa;
 import org.davide.ggbproyect.models.ReservasMesaDTO;
 import org.davide.ggbproyect.models.enums.EstadoReserva;
 import org.davide.ggbproyect.repository.ClienteRepository;
+
+import java.util.Map;
+import java.util.Set;
 import org.davide.ggbproyect.repository.JuegoRepository;
 import org.davide.ggbproyect.repository.MesaRepository;
 import org.davide.ggbproyect.repository.ReservasMesaRepository;
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +32,14 @@ public class ReservasMesaService {
     private final ClienteRepository clienteRepository;
     private final MesaRepository mesaRepository;
     private final JuegoRepository juegoRepository;
+
+    private static final Map<EstadoReserva, Set<EstadoReserva>> TRANSICIONES_RESERVA = Map.of(
+        EstadoReserva.PENDIENTE, Set.of(EstadoReserva.CONFIRMADA, EstadoReserva.CANCELADA),
+        EstadoReserva.CONFIRMADA, Set.of(EstadoReserva.COMPLETADA, EstadoReserva.NO_PRESENTADO, EstadoReserva.CANCELADA),
+        EstadoReserva.COMPLETADA, Set.of(),
+        EstadoReserva.CANCELADA, Set.of(),
+        EstadoReserva.NO_PRESENTADO, Set.of()
+    );
 
     public ReservasMesaService(ReservasMesaRepository reservasMesaRepository,
                                ClienteRepository clienteRepository,
@@ -54,6 +66,18 @@ public class ReservasMesaService {
 
     public ReservasMesaDTO create(ReservasMesaDTO reservasMesaDTO) {
         ReservasMesa reservasMesa = reservasMesaDTO.toEntity();
+
+        if (reservasMesa.getEstado() == null) {
+            reservasMesa.setEstado(EstadoReserva.PENDIENTE);
+        }
+
+        if (reservasMesaDTO.getFechaHoraInicio().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("No se puede crear una reserva en el pasado");
+        }
+        if (reservasMesaDTO.getFechaHoraFin() != null
+                && reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser despues que la de final");
+        }
         if (reservasMesaDTO.getIdCliente() != null) {
             Cliente cliente = clienteRepository.findById(reservasMesaDTO.getIdCliente())
                     .orElseThrow(() -> new EntityNotFoundException("Cliente con id " + reservasMesaDTO.getIdCliente() + " no encontrado"));
@@ -75,6 +99,15 @@ public class ReservasMesaService {
     public ReservasMesaDTO update(Integer id, ReservasMesaDTO reservasMesaDTO) {
         ReservasMesa existingReserva = reservasMesaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Reserva de mesa con id " + id + " no encontrada"));
+
+        if (reservasMesaDTO.getFechaHoraInicio().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("No se puede mover una reserva al pasado");
+        }
+        if (reservasMesaDTO.getFechaHoraFin() != null
+                && reservasMesaDTO.getFechaHoraInicio().isAfter(reservasMesaDTO.getFechaHoraFin())) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser despues que la de final");
+        }
+
         if (reservasMesaDTO.getIdCliente() != null) {
             Cliente cliente = clienteRepository.findById(reservasMesaDTO.getIdCliente())
                     .orElseThrow(() -> new EntityNotFoundException("Cliente con id " + reservasMesaDTO.getIdCliente() + " no encontrado"));
@@ -101,12 +134,15 @@ public class ReservasMesaService {
         }
         if (reservasMesaDTO.getEstado() != null) {
             try {
-                existingReserva.setEstado(EstadoReserva.valueOf(reservasMesaDTO.getEstado()));
+                EstadoReserva nuevoEstado = EstadoReserva.valueOf(reservasMesaDTO.getEstado());
+                validateTransicionReserva(existingReserva.getEstado(), nuevoEstado);
+                existingReserva.setEstado(nuevoEstado);
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Valor de estado invalido: " + reservasMesaDTO.getEstado());
+                throw new IllegalArgumentException(e.getMessage());
             }
         }
         existingReserva.setNotas(reservasMesaDTO.getNotas());
+
         return new ReservasMesaDTO(reservasMesaRepository.save(existingReserva));
     }
 
@@ -115,6 +151,49 @@ public class ReservasMesaService {
                                         Integer idJuegoDeseado, String estado, Pageable pageable) {
         return reservasMesaRepository.filter(idCliente, idMesa, idJuegoDeseado, estado, pageable)
                 .map(ReservasMesaDTO::new);
+    }
+
+    private void validateTransicionReserva(EstadoReserva actual, EstadoReserva nuevo) {
+        if (actual == nuevo) return;
+        Set<EstadoReserva> permitidos = TRANSICIONES_RESERVA.get(actual);
+        if (permitidos == null || !permitidos.contains(nuevo)) {
+            throw new IllegalStateException(
+                "Transicion de estado no permitida: " + actual + " -> " + nuevo);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservasMesaDTO> getMisReservas(String email) {
+        Cliente cliente = clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        return reservasMesaRepository.findByIdClienteId(cliente.getId())
+                .stream()
+                .map(ReservasMesaDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public ReservasMesaDTO cancelarByCliente(Integer id, String email) {
+        Cliente cliente = clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+        ReservasMesa reserva = reservasMesaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva con id " + id + " no encontrada"));
+        if (reserva.getIdCliente() == null || !reserva.getIdCliente().getId().equals(cliente.getId())) {
+            throw new IllegalStateException("No tienes permiso para cancelar esta reserva");
+        }
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE && reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+            throw new IllegalStateException("Solo se pueden cancelar reservas pendientes o confirmadas");
+        }
+        reserva.setEstado(EstadoReserva.CANCELADA);
+        return new ReservasMesaDTO(reservasMesaRepository.save(reserva));
+    }
+
+    public ReservasMesaDTO changeEstado(Integer id, String nuevoEstado) {
+        ReservasMesa reserva = reservasMesaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva con id " + id + " no encontrada"));
+        EstadoReserva estado = EstadoReserva.valueOf(nuevoEstado);
+        validateTransicionReserva(reserva.getEstado(), estado);
+        reserva.setEstado(estado);
+        return new ReservasMesaDTO(reservasMesaRepository.save(reserva));
     }
 
     public void delete(Integer id) {

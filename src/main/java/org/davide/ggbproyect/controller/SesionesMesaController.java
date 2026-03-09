@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -77,6 +78,31 @@ public class SesionesMesaController {
     @PutMapping("/{id}")
     public ResponseEntity<SesionesMesaDTO> update(@PathVariable Integer id, @Valid @RequestBody SesionesMesaDTO sesionesMesaDTO) {
         return ResponseEntity.ok(sesionesMesaService.update(id, sesionesMesaDTO));
+    }
+
+    @PostMapping("/abrir")
+    @Operation(summary = "Abrir sesion de mesa con cascadas automaticas")
+    public ResponseEntity<SesionesMesaDTO> abrir(@Valid @RequestBody SesionesMesaDTO sesionesMesaDTO) {
+        SesionesMesaDTO created = sesionesMesaService.abrir(sesionesMesaDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
+    }
+
+    @PostMapping("/{id}/cerrar")
+    @Operation(summary = "Cerrar sesion de mesa con cascadas automaticas")
+    public ResponseEntity<SesionesMesaDTO> cerrar(@PathVariable Integer id) {
+        return ResponseEntity.ok(sesionesMesaService.cerrar(id));
+    }
+
+    @GetMapping("/mi-sesion")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<SesionesMesaDTO> getMiSesion(Authentication auth) {
+        SesionesMesaDTO sesion = sesionesMesaService.getMiSesionActiva(auth.getName());
+        if (sesion == null) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(sesion);
     }
 
     @DeleteMapping("/{id}")

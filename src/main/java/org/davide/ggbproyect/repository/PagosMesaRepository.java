@@ -18,7 +18,8 @@ public interface PagosMesaRepository extends JpaRepository<PagosMesa, Integer> {
     @EntityGraph(attributePaths = {"idSesion"})
     Page<PagosMesa> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM PagosMesa e LEFT JOIN FETCH e.idSesion WHERE " +
+    @EntityGraph(attributePaths = {"idSesion"})
+    @Query("SELECT e FROM PagosMesa e WHERE " +
            "(:idSesion IS NULL OR e.idSesion.id = :idSesion) AND " +
            "(:metodoPago IS NULL OR str(e.metodoPago) = :metodoPago) AND " +
            "(:estado IS NULL OR str(e.estado) = :estado)")
@@ -26,4 +27,6 @@ public interface PagosMesaRepository extends JpaRepository<PagosMesa, Integer> {
                            @Param("metodoPago") String metodoPago,
                            @Param("estado") String estado,
                            Pageable pageable);
+
+    List<PagosMesa> findByIdSesionId(Integer idSesion);
 }

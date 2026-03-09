@@ -1,74 +1,83 @@
 # GGBProyect - Backend
 
-## Descripción General
-**GGBProyect** es una plataforma integral para la gestión de un local híbrido de ludoteca y restauración. Este repositorio contiene el **Backend** desarrollado en **Spring Boot**, diseñado para ofrecer una API REST robusta y escalable que da servicio a una aplicación frontend (Angular).
+API REST para **GGBar** (Giber Games Bar), un local de ludoteca y restauracion en Alcorcon. Gestiona reservas de mesa, catalogo de juegos, comandas, eventos, inscripciones, facturacion y control de empleados.
 
-El sistema gestiona desde la reserva de mesas y el préstamo de juegos de mesa hasta la toma de comandas de comida y el control de empleados.
+## Tecnologias
 
-## Tecnologías Principales
-*   **Java 17+**
-*   **Spring Boot 3.x** (Web, Data JPA, Validation)
-*   **Base de Datos**: H2 (Desarrollo) / MySQL o PostgreSQL (Producción)
-*   **Seguridad**: (Pendiente de implementación: Spring Security / JWT)
-*   **Build Tool**: Maven
+- **Java 17+** / **Spring Boot 4.0.2**
+- **MySQL** (TiDB Cloud en produccion)
+- **Spring Security** con JWT (HS512) + BCrypt
+- **Spring Data JPA** (Hibernate, paginacion)
+- **Spring Mail** (verificacion de email, recuperacion de password)
+- **Maven** (wrapper `mvnw` incluido)
 
-## Arquitectura del Proyecto
+## Arquitectura
 
-El proyecto sigue una arquitectura en capas clásica, promoviendo la separación de responsabilidades:
+Capas clasicas: Controller > Service > Repository > Entity/DTO.
 
-*   **`controller`**: Controladores REST que exponen los endpoints de la API. Manejan las peticiones HTTP y devuelven DTOs.
-*   **`service`**: Capa de lógica de negocio. Realiza validaciones, cálculos y la conversión entre Entidades y DTOs.
-*   **`repository`**: Interfaces que extienden `JpaRepository` para el acceso a datos.
-*   **`models`**:
-    *   **Entities**: Clases persistentes (`@Entity`) que mapean las tablas de la base de datos.
-    *   **DTOs**: Objetos de transferencia de datos (`Data Transfer Objects`) para desacoplar la API del modelo de datos interno.
+- **21 Controllers**, 17 Services, 17 Repositories
+- **18 Entidades**, 29 DTOs, 13 Enums
+- Validacion con Bean Validation (`@Valid`, `@NotNull`, `@ValidEnum` custom)
+- Conversion Entity-DTO en constructores
 
-## Módulos Principales
+## Modulos
 
-### 1. Gestión de Usuarios y Personal
-*   **Clientes**: Registro, perfil e historial.
-*   **Empleados**: Gestión de personal con roles definidos (Admin, Camarero, Ludotecario).
-*   **Roles**: Control de permisos (`RolesEmpleado`).
+| Modulo            | Descripcion                                                                                            |
+|-------------------|--------------------------------------------------------------------------------------------------------|
+| **Auth**          | Login, registro/verificacion email, recuperacion password, rate limiting (5 intentos = 5min bloqueo)   |
+| **Clientes**      | CRUD, foto de perfil, historial                                                                        |
+| **Empleados**     | CRUD, roles (ADMIN, EMPLEADO), gestion de personal                                                     |
+| **Juegos**        | Catalogo con imagenes, copias fisicas, integracion BoardGameGeek XML API                               |
+| **Mesas**         | Mapa de mesas, estados (LIBRE, OCUPADA, RESERVADA, FUERA_SERVICIO)                                     |
+| **Sesiones**      | Apertura/cierre de sesiones en mesa, estados (ACTIVA, CERRADA, FINALIZADA)                             |
+| **Comandas**      | Pedidos asociados a sesion, flujo de estados (PENDIENTE > CONFIRMADA > PREPARACION > SERVIDA > PAGADA) |
+| **Productos**     | Carta con categorias, IVA, productos personalizables (hamburguesas, copazos)                           |
+| **Reservas**      | Reservas de mesa con juego deseado, transiciones de estado, endpoints cliente                          |
+| **Eventos**       | CRUD eventos con tipos (TORNEO, NOCHE_TEMATICA, TALLER, EVENTO_ESPECIAL), imagenes                     |
+| **Inscripciones** | Inscripcion/desinscripcion a eventos, gestion automatica de capacidad y lista de espera                |
+| **Facturas**      | Generacion de facturas, ticket imprimible, envio PDF por email                                         |
 
-### 2. Ludoteca (Juegos)
-*   **Catálogo**: Base de datos de juegos (`Juego`) con información de complejidad, duración, etc.
-*   **Inventario**: Gestión de copias físicas (`JuegosCopia`) y su estado.
-*   **Tarifas**: Configuración de precios por tiempo de uso (`TarifasLudoteca`).
-*   **Préstamos**: Control de sesiones de juego en mesa (`ReservasJuego`).
+## Roles y Seguridad
 
-### 3. Restauración y Sala
-*   **Mesas**: Mapa de mesas, zonas y capacidades.
-*   **Sesiones**: Control de ocupación (`SesionesMesa`), apertura y cierre de cuentas.
-*   **Comandas**: Pedidos de comida/bebida (`Comanda`, `LineasComanda`) asociados a una sesión.
-*   **Productos**: Carta de productos y precios.
+- **ROLE_ADMIN**: Acceso total
+- **ROLE_EMPLEADO**: Gestion de sala, comandas, sesiones, reservas
+- **ROLE_CLIENTE**: Su sesion, sus comandas, sus reservas, inscripciones a eventos
+- `@PreAuthorize` a nivel de clase con overrides por metodo para endpoints de cliente
+- Endpoints publicos: GET juegos, productos, eventos, imagenes; POST reservas
 
-### 4. Facturación
-*   **Pagos**: Registro de pagos parciales o totales (`PagosMesa`).
-*   **Cálculo de Sesión**: Lógica para calcular el coste final de la ludoteca (`LudotecaSesiones`).
+## Configuracion
 
-## Configuración y Ejecución
+### Variables de entorno
 
-### Requisitos Previos
-*   JDK 17 o superior instalado.
-*   Maven instalado (o usar el wrapper `mvnw` incluido).
+Copiar `.env.example` a `.env` y configurar:
 
-### Ejecutar la Aplicación
+```
+DB_URL=jdbc:mysql://...
+DB_USERNAME=...
+DB_PASSWORD=...
+JWT_SECRET=...              # min 64 chars hex
+JWT_EXPIRATION=604800000    # 7 dias
+ADMIN_PASSWORD=...
+MAIL_USERNAME=...           # Gmail SMTP
+MAIL_PASSWORD=...           # App password
+CORS_ORIGINS=http://localhost:4200
+BGG_API_TOKEN=...
+```
+
+### Ejecucion
+
 ```bash
 ./mvnw spring-boot:run
 ```
-La aplicación se iniciará por defecto en `http://localhost:8080`.
 
-### Documentación de la API
-(Pendiente: Integrar Swagger/OpenAPI en `http://localhost:8080/swagger-ui.html`)
+Se inicia en `http://localhost:8080`.
 
-## Estándares de Desarrollo
-Para detalles sobre las reglas de base de datos, convenciones de nombres y guías para contribuir, consulta el archivo específico:
-📄 **[Documentación de Base de Datos y Estándares](db/READMEdb.md)**
+## Despliegue
 
-## Estado del Proyecto
-🚧 **En Desarrollo**
-*   ✅ CRUDs básicos completados para todas las entidades.
-*   ✅ Estructura de DTOs y Servicios implementada.
-*   🔄 Controladores REST en proceso de finalización.
-*   ❌ Seguridad (JWT) pendiente.
-*   ❌ Lógica de negocio compleja (cálculo de tarifas, stock) pendiente.
+Produccion en **Raspberry Pi 5** con Docker Compose (nginx + Spring Boot + ngrok).
+
+```bash
+~/ggbar/deploy.sh              # todo
+~/ggbar/deploy.sh backend      # solo backend
+~/ggbar/deploy.sh frontend     # solo frontend
+```

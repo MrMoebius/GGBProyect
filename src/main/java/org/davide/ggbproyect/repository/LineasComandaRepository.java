@@ -18,10 +18,13 @@ public interface LineasComandaRepository extends JpaRepository<LineasComanda, In
     @EntityGraph(attributePaths = {"idComanda", "idProducto"})
     Page<LineasComanda> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM LineasComanda e LEFT JOIN FETCH e.idComanda LEFT JOIN FETCH e.idProducto WHERE " +
+    @EntityGraph(attributePaths = {"idComanda", "idProducto"})
+    @Query("SELECT e FROM LineasComanda e WHERE " +
            "(:idComanda IS NULL OR e.idComanda.id = :idComanda) AND " +
            "(:idProducto IS NULL OR e.idProducto.id = :idProducto)")
     Page<LineasComanda> filter(@Param("idComanda") Integer idComanda,
                                @Param("idProducto") Integer idProducto,
                                Pageable pageable);
+
+    List<LineasComanda> findByIdComandaId(Integer idComanda);
 }

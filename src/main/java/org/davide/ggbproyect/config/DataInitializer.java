@@ -52,12 +52,10 @@ public class DataInitializer implements CommandLineRunner {
             if (adminPassword == null || adminPassword.isBlank()) {
                 log.warn("ADMIN_PASSWORD not set. Skipping admin user creation.");
                 return;
-            } //hola
+            }
 
-            RolesEmpleado adminRole = rolesEmpleadoRepository.findAll().stream()
-                    .filter(r -> r.getNombreRol().equals("ADMIN"))
-                    .findFirst()
-                    .orElseThrow();
+            RolesEmpleado adminRole = rolesEmpleadoRepository.findByNombreRol("ADMIN")
+                    .orElseThrow(() -> new IllegalStateException("Rol ADMIN no encontrado"));
 
             Empleado admin = new Empleado();
             admin.setNombre("Admin User");

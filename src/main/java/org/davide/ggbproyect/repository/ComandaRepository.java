@@ -18,10 +18,13 @@ public interface ComandaRepository extends JpaRepository<Comanda, Integer> {
     @EntityGraph(attributePaths = {"idSesion"})
     Page<Comanda> findAll(Pageable pageable);
 
-    @Query("SELECT e FROM Comanda e LEFT JOIN FETCH e.idSesion WHERE " +
+    @EntityGraph(attributePaths = {"idSesion"})
+    @Query("SELECT e FROM Comanda e WHERE " +
            "(:idSesion IS NULL OR e.idSesion.id = :idSesion) AND " +
            "(:estado IS NULL OR str(e.estado) = :estado)")
     Page<Comanda> filter(@Param("idSesion") Integer idSesion,
                          @Param("estado") String estado,
                          Pageable pageable);
+
+    List<Comanda> findByIdSesionId(Integer idSesion);
 }
